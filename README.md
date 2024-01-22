@@ -12,6 +12,10 @@ https://kafka.apache.org/
 
 最初 LinkedIn /lɪŋktˈɪn/ 领英 开发 -> 后来 成为 Apache 软件基金会 项目 
 
+开发语言主要是 Java 和 Scala /ˈskɑːlə, ˈskeɪlə/ 
+
+Scala 运行于 Java 平台（Java虚拟机），并兼容现有的 Java 程序
+
 Kafka /ˈkɑːfkə/ 名字来自 团队成员 Kreps 喜欢的一个作家的名字 - 弗朗茨·卡夫卡 Franz Kafka
 
 LinkedIn 2016被 Microsoft 微软 收购
