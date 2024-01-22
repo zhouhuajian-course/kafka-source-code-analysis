@@ -6,7 +6,8 @@ https://github.com/apache/kafka
 
 ## 官网
 
-https://kafka.apache.org/
+https://kafka.apache.org/  
+https://www.scala-lang.org/
 
 ## 简介
 
