@@ -81,6 +81,20 @@ Topic: TopicTest2	TopicId: uy8MesrQSoWtCpNl-P8CWQ	PartitionCount: 2	ReplicationF
 
 ## 源码编译
 
+修改 数据目录，很重要，方便后期调试
+
+```
+config/server.properties
+修改
+# log.dirs=/tmp/kafka-logs
+log.dirs=E:\\java-project\\kafka-source-code-analysis\\kafka-3.6.1-src\\kafka-logs
+注意 \ 要改成 \\
+
+或者
+# 表示工作目录下的 kafka-logs，运行配置有配置当前工作目录，目录可以不存在
+log.dirs=kafka-logs
+```
+
 问题一 Gradle 下载 Connect time out 
 
 问题二 可能 Scala 环境没弄好
@@ -129,14 +143,20 @@ Topic: TopicTest2	TopicId: uy8MesrQSoWtCpNl-P8CWQ	PartitionCount: 2	ReplicationF
 
     下载ZooKeeper源码，调试，启动，然后运行Kafka，成功
 
-问题五 kafka-logs 数据文件不知道在哪 windows
+问题六 ERROR Shutdown broker because all log dirs in ... have failed (kafka.log.LogManager)
 
-    解决办法 修改 kafka-logs 目录，项目中创建 kafka-logs，
-    config/server.properties
-    修改
-    # log.dirs=/tmp/kafka-logs
-    log.dirs=E:\\java-project\\kafka-source-code-analysis\\kafka-3.6.1-src\\kafka-logs
-    注意 \ 要改成 \\
+```
+据说 操作Topic时，Windows 才会出现这个问题
+
+貌似做topic的删除操作就会出现，尽量不做删除topic操作
+
+解决办法
+1. 停掉 Kafka，删除数据目录 kafka-logs
+2. 停掉 ZooKeeper，删除数据目录 zookeeper_data
+3. 启动 ZooKeeper，启动 Kafka
+问题解决
+```
+
 
 
 ## 工作原理 
