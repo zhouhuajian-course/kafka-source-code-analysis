@@ -1,5 +1,78 @@
 # Kafka 源码分析
 
+## 源码编译
+
+问题一 Gradle 下载 Connect time out 
+
+问题二 可能 Scala 环境没弄好
+
+    gradle.properties 有 Scala 的版本
+    scalaVersion=2.13.11
+    安装 Scala 插件和SDK，
+        插件到设置里面搜索Scala下载，
+        SDK访问kafka-3.6.1-src/core/src/main/scala/kafka/Kafka.scala，
+        上方出现 No Scala Module in module，点击Setup Scala SDK，
+            这个插件不仅仅有语法提示而且可以帮你下载 Scala SDK，切换 SDK 非常方便
+        也可以手动下载Scala SDK，然后指定一下SDK位置
+        https://scala-lang.org/download/ 点击 PICK SPECIAL RELEASE -> 找到 2.13.11 -> 下载 Windows 压缩包
+
+问题三 运行 Kafka
+
+![image_01.png](image/image_01.png)
+
+问题四 Failed to load class org.slf4j.impl.StaticLoggerBinder
+
+    build.gradle 
+
+    // 原来的 testImplementation libs.slf4jlog4j
+    implementation libs.slf4jlog4j
+
+    刷新项目 sync 项目
+
+问题五 log4j:WARN No appenders could be found for logger (kafka.utils.Log4jControllerRegistration$).
+
+    把config/log4j.properties复制一份到
+    core/src/main/resources
+    
+问题四 > Process 'command 'D:\java\jdk-17.0.4.1\bin\java.exe'' finished with non-zero exit value 1
+
+    操作问题四、问题五
+    很重要，不然运行时看不到运行日志和错误日志
+
+    [2024-01-24 12:16:54,099] INFO Opening socket connection to server localhost/127.0.0.1:2181. (org.apache.zookeeper.ClientCnxn)
+    ...
+    [2024-01-24 12:16:55,340] ERROR Exiting Kafka due to fatal exception during startup. (kafka.Kafka$)
+    kafka.zookeeper.ZooKeeperClientTimeoutException: Timed out waiting for connection while in state: CONNECTING
+
+    原因 没启动 ZooKeeper
+
+    解决办法
+
+    下载ZooKeeper源码，调试，启动，然后运行Kafka，成功
+
+## 工作原理 
+
+1. 一个主题，每个分区里面能保证队列有序，不同分区不能保证顺序
+2. 如果分区数量大于，一个消费者组里面的消费者数量，那么会有一个消费者负责消费多个分区，涉及分区消费策略
+3. kafka-console-consumer不指定消费者组时，每次执行都是随机的不同的消费者组
+4. 每个分区里面，涉及生产偏移量，消费偏移量，对于消费偏移量，每个消费者组都在这个分区维护有各自的消费偏移量
+5. 比较经典的部署，就是3台机器，每个消费者组，3个消费者 
+6. 命令行客户端、图形界面客户端、代码客户端
+7. 分区、副本，其实对应的就是一个相应的文件夹
+8. 删除主题时，修改相应的数据文件夹的名字，标记为删除，等时机到了，就会删除，这样性能高，机器资源利用率好
+
+## 其他
+
+大神们的命名习惯各不相同，不需要太在意 例如配置目录 conf config ... 
+
+影响速度的四个因素 CPU > 内存 > 磁盘 > 网络
+
+## 主题、分区、副本
+
+一个主题有一个或多个分区，为了负载均衡，提高性能，多个分区需要分布在不同机器上；一个分区有一个或多个副本，为了避免单点故障，副本必须在其他机器上。
+
+每个分区只能被一个消费者组里面的一个消费者消费，不能被一个消费组里面的多个消费者同时消费，避免同一个消费者组重复消费相同消息。
+
 ## Kafka Streams 简介
 
 *From Internet*
