@@ -1,5 +1,84 @@
 # Kafka 源码分析
 
+## 调试主题 增删改查
+
+https://kafka.apache.org/documentation/#basic_ops
+
+下载对应版本的 二进制 包
+
+常用操作如下
+
+```
+[D:\kafka\kafka_2.13-3.6.1\bin\windows]$ kafka-topics.bat
+Create, delete, describe, or change a topic.
+Option                                   Description                            
+------                                   -----------                            
+--alter                                  Alter the number of partitions and     
+                                           replica assignment. Update the       
+                                           configuration of an existing topic   
+                                           via --alter is no longer supported   
+                                           here (the kafka-configs CLI supports 
+                                           altering topic configs with a --     
+                                           bootstrap-server option).            
+--bootstrap-server <String: server to    REQUIRED: The Kafka server to connect  
+  connect to>                              to.                                                         
+--create                                 Create a new topic.                    
+--delete                                 Delete a topic                         
+--describe                               List details for the given topics.                           
+--help                                   Print usage information.                  
+--list                                   List all available topics.             
+--partitions <Integer: # of partitions>  The number of partitions for the topic 
+                                           being created or altered (WARNING:   
+                                           If partitions are increased for a    
+                                           topic that has a key, the partition  
+                                           logic or ordering of the messages    
+                                           will be affected). If not supplied   
+                                           for create, defaults to the cluster  
+                                           default.                                                                 
+--replication-factor <Integer:           The replication factor for each        
+  replication factor>                      partition in the topic being         
+                                           created. If not supplied, defaults   
+                                           to the cluster default.              
+--topic <String: topic>                  The topic to create, alter, describe   
+                                           or delete. It also accepts a regular 
+                                           expression, except for --create      
+                                           option. Put topic name in double     
+                                           quotes and use the '\' prefix to     
+                                           escape regular expression symbols; e.
+                                           g. "test\.topic".                                                                
+--version                                Display Kafka version.      
+```
+
+具体操作
+
+```
+> kafka-topics.bat --bootstrap-server 192.168.1.103:9092 --list
+
+
+> kafka-topics.bat --bootstrap-server 192.168.1.103:9092 --create --topic TopicTest
+Created topic TopicTest.
+
+> kafka-topics.bat --bootstrap-server 192.168.1.103:9092 --create --topic TopicTest2
+Created topic TopicTest2.
+
+> kafka-topics.bat --bootstrap-server 192.168.1.103:9092 --list
+TopicTest
+TopicTest2
+
+> kafka-topics.bat --bootstrap-server 192.168.1.103:9092 --describe --topic TopicTest
+Topic: TopicTest	TopicId: TVn4roHhSGCu_wuxT_gD_w	PartitionCount: 1	ReplicationFactor: 1 Configs: 
+	Topic: TopicTest	Partition: 0	Leader: 0	Replicas: 0	Isr: 0
+
+> kafka-topics.bat --bootstrap-server 192.168.1.103:9092 --alter --topic TopicTest2 --partitions 2
+
+> kafka-topics.bat --bootstrap-server 192.168.1.103:9092 --describe --topic TopicTest2
+Topic: TopicTest2	TopicId: uy8MesrQSoWtCpNl-P8CWQ	PartitionCount: 2	ReplicationFactor: 1 Configs: 
+	Topic: TopicTest2	Partition: 0	Leader: 0	Replicas: 0	Isr: 0
+	Topic: TopicTest2	Partition: 1	Leader: 0	Replicas: 0	Isr: 0
+
+> kafka-topics.bat --bootstrap-server 192.168.1.103:9092 --delete --topic TopicTest2
+```
+
 ## 源码编译
 
 问题一 Gradle 下载 Connect time out 
@@ -49,6 +128,16 @@
     解决办法
 
     下载ZooKeeper源码，调试，启动，然后运行Kafka，成功
+
+问题五 kafka-logs 数据文件不知道在哪 windows
+
+    解决办法 修改 kafka-logs 目录，项目中创建 kafka-logs，
+    config/server.properties
+    修改
+    # log.dirs=/tmp/kafka-logs
+    log.dirs=E:\\java-project\\kafka-source-code-analysis\\kafka-3.6.1-src\\kafka-logs
+    注意 \ 要改成 \\
+
 
 ## 工作原理 
 
