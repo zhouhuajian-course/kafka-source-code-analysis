@@ -1,5 +1,61 @@
 # Kafka 源码分析
 
+## 调试生产者
+
+```
+> .\kafka-console-producer.bat
+Missing required option(s) [bootstrap-server]
+Option                                   Description
+------                                   -----------
+--bootstrap-server <String: server to    REQUIRED unless --broker-list
+  connect to>                              (deprecated) is specified. The server
+                                           (s) to connect to. The broker list
+                                           string in the form HOST1:PORT1,HOST2:
+                                           PORT2.
+--broker-list <String: broker-list>      DEPRECATED, use --bootstrap-server
+                                           instead; ignored if --bootstrap-
+                                           server is specified.  The broker
+                                           list string in the form HOST1:PORT1,
+                                           HOST2:PORT2.
+--topic <String: topic>                  REQUIRED: The topic id to produce
+                                           messages to.
+--version                                Display Kafka version.
+```
+
+```
+> .\kafka-console-producer.bat  --bootstrap-server 192.168.1.103:9092 --topic TopicTest
+>test01
+>test02
+>test03
+```
+
+## 调试消费者
+
+```
+
+> kafka-console-consumer.bat
+This tool helps to read data from Kafka topics and outputs it to standard output.
+Option                                   Description
+------                                   -----------
+--bootstrap-server <String: server to    REQUIRED: The server(s) to connect to.
+  connect to>
+--from-beginning                         If the consumer does not already have
+                                           an established offset to consume
+                                           from, start with the earliest
+                                           message present in the log rather
+                                           than the latest message.
+--group <String: consumer group id>      The consumer group id of the consumer.
+--topic <String: topic>                  The topic to consume on.
+--version                                Display Kafka version.
+```
+
+```
+>kafka-console-consumer.bat  --bootstrap-server 192.168.1.103:9092 --topic TopicTest
+test01
+test02
+test03
+```
+
 ## 调试主题 增删改查
 
 https://kafka.apache.org/documentation/#basic_ops
