@@ -174,13 +174,13 @@ Prior releases: [0.7.x](/07/documentation.html), [0.8.0](/08/documentation.html)
 
 ### [1.1 Introduction](#introduction)
 
-#### [](#intro_streaming)[What is event streaming?](#intro_streaming)
+#### [What is event streaming?](#intro_streaming)
 
 Event streaming is the digital equivalent of the human body's central nervous system. It is the technological foundation for the 'always-on' world where businesses are increasingly software-defined and automated, and where the user of software is more software.
 
 Technically speaking, event streaming is the practice of capturing data in real-time from event sources like databases, sensors, mobile devices, cloud services, and software applications in the form of streams of events; storing these event streams durably for later retrieval; manipulating, processing, and reacting to the event streams in real-time as well as retrospectively; and routing the event streams to different destination technologies as needed. Event streaming thus ensures a continuous flow and interpretation of data so that the right information is at the right place, at the right time.
 
-#### [](#intro_usage)[What can I use event streaming for?](#intro_usage)
+#### [What can I use event streaming for?](#intro_usage)
 
 Event streaming is applied to a [wide variety of use cases](/powered-by) across a plethora of industries and organizations. Its many examples include:
 
@@ -192,7 +192,7 @@ Event streaming is applied to a [wide variety of use cases](/powered-by) across 
 * To connect, store, and make available data produced by different divisions of a company.
 * To serve as the foundation for data platforms, event-driven architectures, and microservices.
 
-#### [](#intro_platform)[Apache Kafka® is an event streaming platform. What does that mean?](#intro_platform)
+#### [Apache Kafka® is an event streaming platform. What does that mean?](#intro_platform)
 
 Kafka combines three key capabilities so you can implement [your use cases](/powered-by) for event streaming end-to-end with a single battle-tested solution:
 
@@ -202,7 +202,7 @@ Kafka combines three key capabilities so you can implement [your use cases](/pow
 
 And all this functionality is provided in a distributed, highly scalable, elastic, fault-tolerant, and secure manner. Kafka can be deployed on bare-metal hardware, virtual machines, and containers, and on-premises as well as in the cloud. You can choose between self-managing your Kafka environments and using fully managed services offered by a variety of vendors.
 
-#### [](#intro_nutshell)[How does Kafka work in a nutshell?](#intro_nutshell)
+#### [How does Kafka work in a nutshell?](#intro_nutshell)
 
 Kafka is a distributed system consisting of **servers** and **clients** that communicate via a high-performance [TCP network protocol](/protocol.html). It can be deployed on bare-metal hardware, virtual machines, and containers in on-premise as well as cloud environments.
 
@@ -210,7 +210,7 @@ Kafka is a distributed system consisting of **servers** and **clients** that com
 
 **Clients**: They allow you to write distributed applications and microservices that read, write, and process streams of events in parallel, at scale, and in a fault-tolerant manner even in the case of network problems or machine failures. Kafka ships with some such clients included, which are augmented by [dozens of clients](https://cwiki.apache.org/confluence/display/KAFKA/Clients) provided by the Kafka community: clients are available for Java and Scala including the higher-level [Kafka Streams](/documentation/streams/) library, for Go, Python, C/C++, and many other programming languages as well as REST APIs.
 
-#### [](#intro_concepts_and_terms)[Main Concepts and Terminology](#intro_concepts_and_terms)
+#### [Main Concepts and Terminology](#intro_concepts_and_terms)
 
 An **event** records the fact that "something happened" in the world or in your business. It is also called record or message in the documentation. When you read or write data to Kafka, you do this in the form of events. Conceptually, an event has a key, value, timestamp, and optional metadata headers. Here's an example event:
 
@@ -232,7 +232,7 @@ To make your data fault-tolerant and highly-available, every topic can be **repl
 
 This primer should be sufficient for an introduction. The [Design](/documentation/#design) section of the documentation explains Kafka's various concepts in full detail, if you are interested.
 
-#### [](#intro_apis)[Kafka APIs](#intro_apis)
+#### [Kafka APIs](#intro_apis)
 
 In addition to command line tooling for management and administration tasks, Kafka has five core APIs for Java and Scala:
 
@@ -242,7 +242,7 @@ In addition to command line tooling for management and administration tasks, Kaf
 * The [Kafka Streams API](/documentation/streams) to implement stream processing applications and microservices. It provides higher-level functions to process event streams, including transformations, stateful operations like aggregations and joins, windowing, processing based on event-time, and more. Input is read from one or more topics in order to generate output to one or more topics, effectively transforming the input streams to output streams.
 * The [Kafka Connect API](/documentation.html#connect) to build and run reusable data import/export connectors that consume (read) or produce (write) streams of events from and to external systems and applications so they can integrate with Kafka. For example, a connector to a relational database like PostgreSQL might capture every change to a set of tables. However, in practice, you typically don't need to implement your own connectors because the Kafka community already provides hundreds of ready-to-use connectors.
 
-#### [](#intro_more)[Where to go from here](#intro_more)
+#### [Where to go from here](#intro_more)
 
 * To get hands-on experience with Kafka, follow the [Quickstart](/quickstart).
 * To understand Kafka in more detail, read the [Documentation](/documentation/). You also have your choice of [Kafka books and academic papers](/books-and-papers).
@@ -289,14 +289,14 @@ Kafka can serve as a kind of external commit-log for a distributed system. The l
 
 ### [1.3 Quick Start](#quickstart)
 
-#### [](#quickstart_download)[Step 1: Get Kafka](#quickstart_download)
+#### [Step 1: Get Kafka](#quickstart_download)
 
 [Download](https://www.apache.org/dyn/closer.cgi?path=/kafka/3.6.1/kafka_2.13-3.6.1.tgz) the latest Kafka release and extract it:
 
     $ tar -xzf kafka_2.13-3.6.1.tgz
     $ cd kafka_2.13-3.6.1
 
-#### [](#quickstart_startserver)[Step 2: Start the Kafka environment](#quickstart_startserver)
+#### [Step 2: Start the Kafka environment](#quickstart_startserver)
 
 NOTE: Your local environment must have Java 8+ installed.
 
@@ -332,7 +332,7 @@ Start the Kafka Server
 
 Once the Kafka server has successfully launched, you will have a basic Kafka environment running and ready to use.
 
-#### [](#quickstart_createtopic)[Step 3: Create a topic to store your events](#quickstart_createtopic)
+#### [Step 3: Create a topic to store your events](#quickstart_createtopic)
 
 Kafka is a distributed _event streaming platform_ that lets you read, write, store, and process [_events_](/documentation/#messages) (also called _records_ or _messages_ in the documentation) across many machines.
 
@@ -348,7 +348,7 @@ All of Kafka's command line tools have additional options: run the `kafka-topics
     Topic: quickstart-events        TopicId: NPmZHyhbR9y00wMglMH2sg PartitionCount: 1       ReplicationFactor: 1	Configs:
         Topic: quickstart-events Partition: 0    Leader: 0   Replicas: 0 Isr: 0
 
-#### [](#quickstart_send)[Step 4: Write some events into the topic](#quickstart_send)
+#### [Step 4: Write some events into the topic](#quickstart_send)
 
 A Kafka client communicates with the Kafka brokers via the network for writing (or reading) events. Once received, the brokers will store the events in a durable and fault-tolerant manner for as long as you need—even forever.
 
@@ -360,7 +360,7 @@ Run the console producer client to write a few events into your topic. By defaul
 
 You can stop the producer client with `Ctrl-C` at any time.
 
-#### [](#quickstart_consume)[Step 5: Read the events](#quickstart_consume)
+#### [Step 5: Read the events](#quickstart_consume)
 
 Open another terminal session and run the console consumer client to read the events you just created:
 
@@ -374,7 +374,7 @@ Feel free to experiment: for example, switch back to your producer terminal (pre
 
 Because events are durably stored in Kafka, they can be read as many times and by as many consumers as you want. You can easily verify this by opening yet another terminal session and re-running the previous command again.
 
-#### [](#quickstart_kafkaconnect)[Step 6: Import/export your data as streams of events with Kafka Connect](#quickstart_kafkaconnect)
+#### [Step 6: Import/export your data as streams of events with Kafka Connect](#quickstart_kafkaconnect)
 
 You probably have lots of data in existing systems like relational databases or traditional messaging systems, along with many applications that already use these systems. [Kafka Connect](/documentation/#connect) allows you to continuously ingest data from external systems into Kafka, and vice versa. It is an extensible tool that runs _connectors_, which implement the custom logic for interacting with an external system. It is thus very easy to integrate existing systems with Kafka. To make this process even easier, there are hundreds of such connectors readily available.
 
@@ -420,7 +420,7 @@ The connectors continue to process data, so we can add data to the file and see 
 
 You should see the line appear in the console consumer output and in the sink file.
 
-#### [](#quickstart_kafkastreams)[Step 7: Process your events with Kafka Streams](#quickstart_kafkastreams)
+#### [Step 7: Process your events with Kafka Streams](#quickstart_kafkastreams)
 
 Once your data is stored in Kafka as events, you can process the data with the [Kafka Streams](/documentation/streams) client library for Java/Scala. It allows you to implement mission-critical real-time applications and microservices, where the input and/or output data is stored in Kafka topics. Kafka Streams combines the simplicity of writing and deploying standard Java and Scala applications on the client side with the benefits of Kafka's server-side cluster technology to make these applications highly scalable, elastic, fault-tolerant, and distributed. The library supports exactly-once processing, stateful operations and aggregations, windowing, joins, processing based on event-time, and much more.
 
@@ -437,7 +437,7 @@ To give you a first taste, here's how one would implement the popular `WordCount
 
 The [Kafka Streams demo](/documentation/streams/quickstart) and the [app development tutorial](/36/documentation/streams/tutorial) demonstrate how to code and run such a streaming application from start to finish.
 
-#### [](#quickstart_kafkaterminate)[Step 8: Terminate the Kafka environment](#quickstart_kafkaterminate)
+#### [Step 8: Terminate the Kafka environment](#quickstart_kafkaterminate)
 
 Now that you reached the end of the quickstart, feel free to tear down the Kafka environment—or continue playing around.
 
@@ -449,7 +449,7 @@ If you also want to delete any data of your local Kafka environment including an
 
     $ rm -rf /tmp/kafka-logs /tmp/zookeeper /tmp/kraft-combined-logs
 
-#### [](#quickstart_kafkacongrats)[Congratulations!](#quickstart_kafkacongrats)
+#### [Congratulations!](#quickstart_kafkacongrats)
 
 You have successfully finished the Apache Kafka quickstart.
 
@@ -12392,7 +12392,7 @@ The compaction is done in the background by periodically recopying log segments.
 
 ![](https://kafka.apache.org/36/images/log_compaction.png)
 
-#### [](#design_compactionguarantees)[What guarantees does log compaction provide](#design_compactionguarantees)?
+#### [What guarantees does log compaction provide](#design_compactionguarantees)?
 
 Log compaction guarantees the following:
 
@@ -12435,7 +12435,7 @@ Kafka cluster has the ability to enforce quotas on requests to control the broke
 1.  Network bandwidth quotas define byte-rate thresholds (since 0.9)
 2.  Request rate quotas define CPU utilization thresholds as a percentage of network and I/O threads (since 0.11)
 
-#### [](#design_quotasnecessary)[Why are quotas necessary](#design_quotasnecessary)?
+#### [Why are quotas necessary](#design_quotasnecessary)?
 
 It is possible for producers and consumers to produce/consume very high volumes of data or generate requests at a very high rate and thus monopolize broker resources, cause network saturation and generally DOS other clients and the brokers themselves. Having quotas protects against these issues and is all the more important in large multi-tenant clusters where a small set of badly behaved clients can degrade user experience for the well behaved ones. In fact, when running Kafka as a service this even makes it possible to enforce API limits according to an agreed upon contract.
 
