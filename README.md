@@ -1,5 +1,9 @@
 # Kafka 源码分析
 
+## Kafka Knowledge
+
+https://www.processon.com/view/5f3e9546f346fb06ded2fdc4
+
 ## 源码分析 Broker 启动过程 (部分内容来自网络，可能不正确)
 
 ```
