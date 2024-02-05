@@ -1,5 +1,135 @@
 # Kafka 源码分析
 
+## 源码分析 Broker 启动过程 (部分内容来自网络，可能不正确)
+
+```
+启动类 kafka.Kafka (Kafka.scala)
+
+入口 Kafka.scala#main()
+
+主要三步：
+1. Kafka.scala#getPropsFromArgs() 将启动参数指定配置文件加载到内存
+2. Kafka.scala#buildServer() 创建 Kafka Server 
+  2.1 将内存中的配置，转化为 KafkaConfig对象
+  2.2 KafkaConfig.scala#requiresZookeeper() 确定 Kafka的启动模式，raft or zk
+      通过process.roles配置的存在与否来判断
+  2.3 kafka 3.0 KRaft支持已经比较稳定，走 raft 模式，会创建 KafkaRaftServer 
+    2.3.1 broker BrokerServer对象
+    2.3.2 controler ControlerServer对象，用来处理元数据类请求，包含topic创建删除等
+    2.3.3 raftManager KafkaRaftManager对象，负责集选举及元数据同步的组件
+3. Server.scala#startup() 启动 Kafka Server
+    网络通讯相关的 
+      SocketServer 底层网络服务器的创建及配置启动
+      KafkaRequestHandlerPool 上层请求处理器池的创建启动
+    3.1 KafkaScheduler 对象， 定时任务线程池
+    3.2 KRaftMetadataCache 集群元数据管理组件
+    3.3 BrokerToControllerChannelManager broker到controller的连接管理器
+    3.4 forwardingManager 转发应该由controller处理的请求
+    3.5 socketServer 底层网络服务器
+    3.6 _replicaManager 副本管理器，负责消息的存储读取
+    3.7 metadataListerner 元数据监听对象，会注册到KafkaRaftManager中监听集群元数据变化
+    3.8 groupCoordinator 普通消费者组协调器，负责辅助完成消费组内各个消费者消费分区的协调分配
+    3.9 dataPlaneRequestProcessor KafkaApis对象，上层的请求处理器，持有底层网络服务器的请求队列socketServer.dataPlaneRequestChannel
+        负责从队列中取出请求进行处理
+    3.10 dataPlaneRequestHandlerPool KafkaRequestHandlerPool 请求处理线程池        
+```
+
+```
+Kafka 新建立连接、请求处理
+1. Acceptor连接接收器启动后，SocketServer.scala#Acceptor#run()
+    1.1 serverChannel.register() ServerSocketChannel Selector 监听事件 SelectionKey.OP_ACCEP
+    1.2 死循环 SocketServer.scala#Acceptor#acceptNewConnections() 接受远端连接
+    1.3 新连接 丢到 对应的 新建连接队列 processor去处理
+2. SocketServer.scala#Processor#processNewResponses()
+3. SocketServer.scala#Processor#processCompletedReceives()
+```
+
+![img.png](image/image_02.png)
+![img.png](image/image_03.png)
+![img.png](image/image_04.png)
+
+```
+      if (canStartup) {
+        _brokerState = BrokerState.STARTING
+
+        /* setup zookeeper */
+        // 初始化Zk客户端
+        initZkClient(time)
+        
+          private def initZkClient(time: Time): Unit = {
+    info(s"Connecting to zookeeper on ${config.zkConnect} 连接zookeeper...............")
+    // config.zkConnect 是 localhost:2181
+    // 创建zk客户端
+    _zkClient = KafkaZkClient.createZkClient("Kafka server", time, config, zkClientConfig)
+    // 创建顶级路径
+    _zkClient.createTopLevelPaths()
+  }
+
+```
+
+![img.png](image/image_05.png)
+
+```
+        /* start scheduler */
+        // 创建并开始定时任务
+        kafkaScheduler = new KafkaScheduler(config.backgroundThreads)
+        kafkaScheduler.startup()
+```
+
+![img.png](image/image_06.png)
+
+```
+KafkaServer里面有很多重要的属性，各个组件，
+例如socketServer，replicaManager 副本管理器、kafkaController 集群管理器，groupCoordinator，LogManager ，
+kafkaScheduler 定时器，zkClient，transactionCoordinator 事务协调器等
+
+1. 每个Broker都有一个controller，主要负责管理整个集群，
+但每个集群中，只有一个Leader的controller有资格管理集群
+2. leader controller 借助 zookeeper 选出来的，
+每个controller初始化时，都会向zk注册leader路径的监听，
+第一个成功写入zk的controller会成为leader，其他controller会收到新leader的通知，
+将自己设为follower
+3. 当controller成为leader时，会像zk注册相关监听
+4. leader controller 会监听集群数据变化，如增加topic partition replica等
+当监听到数据变化leader controller会得到zk的通知，并处理，
+处理完后，同步相关数据给其他follower controller
+5. controller leader 负责管理整个集群中分区和副本的状态
+```
+
+```
+Broker 层次，分Leader和Follower
+Replica 层次，也分Leader和Follower
+Zookeeper 集群，也分Leader和Follower
+
+Broker 启动时，会去ZK中创建/controller节点，
+第一个成功创建/controller节点的Broker会被指定为Controller
+（单机版时，没看到这个节点，版本不一样？还是需要集群才行？）
+假设Broker 0是控制器，broker 0宕机，zk watch机制感知到，删除/controller临时节点
+之后，其他存活broker竞选，假设broker 3最终赢得选举，
+成功在zk重建/controoler节点，之后，
+broker 3会从zk读取集群元数据，并初始化到自己的内存缓存中
+控制器failover完成
+```
+
+![img.png](image/image_07.png)
+
+## 监控平台 可视化工具  
+
+有很多监控平台，例如 
+
+1. Kafka Eagle (最后一次提交 5 months ago)
+2. Kafka Center
+3. Xinfra Monitor (LinkedIn)
+4. Kafdrop (Apache 2.0 许可项目，作为一款 Apache Kafka Web UI 可视化工具 ) (最后一次提交 last week)
+5. Logi-KafkaManager
+6. Kafka Manager (更名为CMAK) (Yahoo) （最后一次提交 2 years ago）
+
+
+等等...
+
+http://www.kafka-eagle.org/
+https://github.com/yahoo/CMAK
+
 ## 调试生产者
 
 ```
@@ -215,7 +345,7 @@ log.dirs=kafka-logs
 
 
 
-## 工作原理 
+## Basic
 
 1. 一个主题，每个分区里面能保证队列有序，不同分区不能保证顺序
 2. 如果分区数量大于，一个消费者组里面的消费者数量，那么会有一个消费者负责消费多个分区，涉及分区消费策略
@@ -291,6 +421,19 @@ Kafka Streams是一套客户端类库，它可以对存储在Kafka内的数据�
 4、Kafka本身也有优点。由于Kafka Consumer Rebalance机制，Kafka Stream可以在线动态调整并发度。
 ```
 
+## Kafka KRaft
+
+Raft一种共识技术，Paxos也是，KRaft 使用了 Raft 共识算法的一种基于事件的变体，因此得名。
+
+/rɑːft/
+
+```
+当今互联网中的每一个系统，都可以看作是分布式系统的一种形式。
+虽然大多数系统不需要任何形式的分布式状态或者副本——因为这会增加复杂性、运维支持成本，并影响系统交付的质量，但在需要实现高可用性等情况下，就必须采用分布式状态或副本。然而，构建一个容错和快速的分布式系统是极具挑战性的。
+"...容错性方案基本都是主备。所有的数据流都经过主节点，并由主节点在备份到备节点。当主节点宕机时，切换到备节点继续处理。这不是很好的做法。
+共识技术已经存在很长时间了，它们赋予我们在市场中达成共识和正确容错的能力。Paxos可能是最著名的，但是很难实现和正确使用。然后 Raft 论文的发表改变了人们对此的看法。因为 Raft 有个有趣的目标，是建立一个易于理解的共识算法，而不是建立一个完美的算法。这是个巨大的革新。"
+——著名高性能专家 Martin Thompson（Dirsuptor和SBE等作者）在2020 Qcon演讲中提到
+```
 
 ## Kafka Connect 简介
 
@@ -336,3 +479,5 @@ Kafka 中文名 卡夫卡
 7/10最大的零售公司  
 7/10最大的银行和金融公司  
 6/10最大的能源和公用事业组织  
+
+Zookeeper  /ˈzuːˌkiː.pər/

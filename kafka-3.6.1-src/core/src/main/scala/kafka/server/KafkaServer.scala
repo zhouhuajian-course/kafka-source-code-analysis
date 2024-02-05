@@ -206,7 +206,7 @@ class KafkaServer(
    */
   override def startup(): Unit = {
     try {
-      info("starting")
+      info("starting 正在开始................")
 
       if (isShuttingDown.get)
         throw new IllegalStateException("Kafka server is still shutting down, cannot re-start!")
@@ -219,14 +219,17 @@ class KafkaServer(
         _brokerState = BrokerState.STARTING
 
         /* setup zookeeper */
+        // 初始化Zk客户端
         initZkClient(time)
         configRepository = new ZkConfigRepository(new AdminZkClient(zkClient))
 
         /* Get or create cluster_id */
+        // 获取或创建集群ID
         _clusterId = getOrGenerateClusterId(zkClient)
         info(s"Cluster ID = $clusterId")
 
         /* load metadata */
+        // 加载元数据
         val (preloadedBrokerMetadataCheckpoint, initialOfflineDirs) =
           BrokerMetadataCheckpoint.getBrokerMetadataAndOfflineDirs(config.logDirs, ignoreMissing = true, kraftMode = false)
 
@@ -252,6 +255,7 @@ class KafkaServer(
         config.dynamicConfig.initialize(Some(zkClient))
 
         /* start scheduler */
+        // 创建并开始定时任务
         kafkaScheduler = new KafkaScheduler(config.backgroundThreads)
         kafkaScheduler.startup()
 
@@ -654,8 +658,11 @@ class KafkaServer(
   }
 
   private def initZkClient(time: Time): Unit = {
-    info(s"Connecting to zookeeper on ${config.zkConnect}")
+    info(s"Connecting to zookeeper on ${config.zkConnect} 连接zookeeper...............")
+    // config.zkConnect 是 localhost:2181
+    // 创建zk客户端
     _zkClient = KafkaZkClient.createZkClient("Kafka server", time, config, zkClientConfig)
+    // 创建顶级路径
     _zkClient.createTopLevelPaths()
   }
 

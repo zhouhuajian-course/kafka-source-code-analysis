@@ -29,6 +29,7 @@ import org.apache.kafka.server.util.CommandLineUtils
 object Kafka extends Logging {
 
   def getPropsFromArgs(args: Array[String]): Properties = {
+    // 选项解析器 不允许缩写
     val optionParser = new OptionParser(false)
     val overrideOpt = optionParser.accepts("override", "Optional property that should override values set in server.properties file")
       .withRequiredArg()
@@ -38,12 +39,13 @@ object Kafka extends Logging {
     // but would not be mandatory if --version is specified
     // This is a bit of an ugly crutch till we get a chance to rework the entire command line parsing
     optionParser.accepts("version", "Print version information and exit.")
-
+    // 参数为空 或 包含 --help 打印帮助文档
     if (args.isEmpty || args.contains("--help")) {
+      // 命令行工具 打印用法并退出
       CommandLineUtils.printUsageAndExit(optionParser,
-        "USAGE: java [options] %s server.properties [--override property=value]*".format(this.getClass.getCanonicalName.split('$').head))
+        "USAGE用法: java [options] %s server.properties [--override property=value]*".format(this.getClass.getCanonicalName.split('$').head))
     }
-
+    // --version 打印版本并退出
     if (args.contains("--version")) {
       CommandLineUtils.printVersionAndExit()
     }
@@ -70,6 +72,7 @@ object Kafka extends Logging {
 
   private def buildServer(props: Properties): Server = {
     val config = KafkaConfig.fromProps(props, false)
+    // 需要 Zookeeper 猜测，配了Zookeeper配置，该属性就是true
     if (config.requiresZookeeper) {
       new KafkaServer(
         config,
@@ -77,7 +80,9 @@ object Kafka extends Logging {
         threadNamePrefix = None,
         enableForwarding = enableApiForwarding(config)
       )
-    } else {
+    }
+    // 不需要 Zookeeper，使用Kafka Raft
+    else {
       new KafkaRaftServer(
         config,
         Time.SYSTEM,
@@ -85,9 +90,12 @@ object Kafka extends Logging {
     }
   }
 
+  // 入口函数
   def main(args: Array[String]): Unit = {
     try {
+      // 从命令行参数获取服务器属性
       val serverProps = getPropsFromArgs(args)
+      // 构建服务器
       val server = buildServer(serverProps)
 
       try {
@@ -100,6 +108,7 @@ object Kafka extends Logging {
       }
 
       // attach shutdown handler to catch terminating signals as well as normal termination
+      // 处理Kafka退出，做一些退出处理
       Exit.addShutdownHook("kafka-shutdown-hook", {
         try server.shutdown()
         catch {
@@ -109,7 +118,7 @@ object Kafka extends Logging {
             Exit.halt(1)
         }
       })
-
+      // 服务器 启动
       try server.startup()
       catch {
         case e: Throwable =>
@@ -117,7 +126,7 @@ object Kafka extends Logging {
           fatal("Exiting Kafka due to fatal exception during startup.", e)
           Exit.exit(1)
       }
-
+      // 服务器等待关闭
       server.awaitShutdown()
     }
     catch {
