@@ -4,6 +4,80 @@
 
 https://www.processon.com/view/5f3e9546f346fb06ded2fdc4
 
+# 集群 搭建 三台 3.6.1
+
+Kafka 2.8.0 以后支持使用新的 Raft 模式搭建集群，开始逐渐放弃 ZooKeeper  
+据说 Kafka 4.0 将完全放弃 ZooKeeper  
+以下使用 Kafka 3.6.1 自带的 ZooKeeper 进行搭建
+
+步骤参考网络，即使实践过，也不一定准确，具体还得参考官网描述，
+
+1. jdk 17 三台机器 /software/jdk
+2. kafka 3.6.1 三台机器 /software/kafka
+3. 环境变量 三台机器  
+   vim /etc/profile  
+   export PATH="$PATH:/software/jdk/bin:/software/kafka/bin"  
+   source /etc/profile
+4. 修改 zookeeper.properties    
+```
+# dataDir=/tmp/zookeeper  
+dataDir=/software/kafka/zkdata
+
+initLimit=20 (需要，否则启动zk报错 Caused by: java.lang.IllegalArgumentException: initLimit is not set)
+syncLimit=10 (没有会报错 Caused by: java.lang.IllegalArgumentException: syncLimit is not set)
+
+server.201=192.168.1.201:2888:3888  
+server.202=192.168.1.202:2888:3888  
+server.203=192.168.1.203:2888:3888 
+```
+    
+5. 在 zkdata 里面创建 myid，并写入id  
+   mkdir zkdata
+   echo 201 > myid (另两台分别为 202 203)  
+6. 配置 Kafka server.properties  
+```
+# borker.id=0  
+broker.id=201 (另两台分别为 202 203)    
+
+# log.dirs=/tmp/kafka-logs    
+log.dirs=/software/kafka/data  
+
+# zookeeper.connect=localhost:2181    
+zookeeper.connect=192.168.1.201:2181,192.168.1.202:2181,192.168.1.203:2181    
+
+#listeners=PLAINTEXT://:9092
+listeners:PLAINTEXT://192.168.1.201:9092 (另两台分别为202 203)
+(必须，否则后续使用会出现 Request processing failed: kafdrop.service.KafkaAdminClientException: java.util.concurrent.ExecutionException: org.apache.kafka.common.errors.TimeoutException: Timed out waiting for a node assignment. Call: listNodes)
+```
+7. 三台机器 启动 zk
+```shell
+$ zookeeper-server-start.sh
+USAGE: /software/kafka/bin/zookeeper-server-start.sh [-daemon] zookeeper.properties
+$ (先调试一台机器) zookeeper-server-start.sh /software/kafka/config/zookeeper.properties
+$ (调试三台机器) zookeeper-server-start.sh /software/kafka/config/zookeeper.properties
+$ (没问题后，三台机器) zookeeper-server-start.sh -daemon /software/kafka/config/zookeeper.properties
+日志在 zookeeper.out，看看有没报错
+```
+8. 三台集群 启动 kafka
+```shell
+$ kafka-server-start.sh 
+USAGE: /software/kafka/bin/kafka-server-start.sh [-daemon] server.properties [--override property=value]*
+$ (直接三台调试) kafka-server-start.sh /software/kafka/config/server.properties 
+$ (没问题后，三台后台启动) kafka-server-start.sh -daemon /software/kafka/config/server.properties 
+日志在 server.log 
+tail -f server.log
+```
+9. 使用可视化工具 kafdrop 看看集群状况
+```
+(可 Windows 操作，用 jdk-17)
+> D:\java\jdk-17.0.4.1\bin\java.exe --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -jar kafdrop-4.0.1.jar --kafka.brokerConnect=192.168.1.201:9092,192.168.1.202:9092,192.168.1.203:9092
+访问  http://localhost:9000
+能在Web UI上看到三台broker
+```
+![img.png](image/image_08.png)
+  
+
+
 ## 源码分析 Broker 启动过程 (部分内容来自网络，可能不正确)
 
 ```
@@ -128,11 +202,15 @@ broker 3会从zk读取集群元数据，并初始化到自己的内存缓存中
 5. Logi-KafkaManager
 6. Kafka Manager (更名为CMAK) (Yahoo) （最后一次提交 2 years ago）
 
-
 等等...
 
 http://www.kafka-eagle.org/
-https://github.com/yahoo/CMAK
+https://github.com/yahoo/CMAK  
+https://github.com/obsidiandynamics/kafdrop  
+
+kafdrop 启动 `java --add-opens=java.base/sun.nio.ch=ALL-UNNAMED \
+-jar target/kafdrop-<version>.jar \
+--kafka.brokerConnect=<host:port,host:port>,...`
 
 ## 调试生产者
 
