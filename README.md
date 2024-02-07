@@ -108,6 +108,54 @@ zk上多了些数据
 ![img.png](image/image_10.png)
 ![img.png](image/image_11.png)
 
+zk上多了/topics/TestTopic
+```
+{
+  "partitions": {
+    "0": [
+      101,
+      102
+    ],
+    "1": [
+      103,
+      101
+    ],
+    "2": [
+      102,
+      103
+    ]
+  },
+  "topic_id": "Qbk_tV3MTxu1GPQPmoNd_Q",
+  "adding_replicas": {},
+  "removing_replicas": {},
+  "version": 3
+}
+```
+
+
+![img.png](image/image_12.png)
+![img.png](image/image_13.png)
+
+7. 关闭101，controller节点，过一段时间后，大概10几秒
+```
+zk上控制器，变成102
+/controller
+{
+  "version": 2,
+  "brokerid": 102,
+  "timestamp": "1707278204217",
+  "kraftControllerEpoch": -1
+}
+brokers/ids/101，这个节点被删除
+```
+8. 再次启动101
+```
+Recorded new controller, from now on will use node localhost:9092 (id: 102 rack: null) 
+表示控制器变102
+brokers/ids/101数据恢复
+```
+
+
 ## Kafka Knowledge
 
 https://www.processon.com/view/5f3e9546f346fb06ded2fdc4
