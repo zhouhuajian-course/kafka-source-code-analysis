@@ -1,5 +1,113 @@
 # Kafka 源码分析
 
+## 源码 集群 搭建 一台 Windows 三个节点 3.6.1
+
+1. 启动zookeeper集群 端口 2181 2182 2183
+2. 复制server.properties，生成三份配置
+```
+-- server101.properties (这里不用1 2 3是为了调试时方便看日志) --
+broker.id=101 (另外两个分别为102 103)
+listeners=PLAINTEXT://localhost:9091 (另外两个分别为9092 9093 默认是9092)
+advertised.listeners=PLAINTEXT://localhost:9091 (好像又不需要配，否则报警告，WARN [Controller id=101, targetBrokerId=102] Connection to node 102 (localhost/127.0.0.1:9092) could not be established. Broker may not be available. 另外两个分别为9092 9093 默认是9092)
+
+log.dirs=kfdata101 (另外两个分别为 102 103)
+
+zookeeper.connect=localhost:2181,localhost:2182,localhost:2183
+zookeeper.connection.timeout.ms=18000
+
+num.network.threads=3
+num.io.threads=8
+socket.send.buffer.bytes=102400
+socket.receive.buffer.bytes=102400
+socket.request.max.bytes=104857600
+
+num.partitions=1
+num.recovery.threads.per.data.dir=1
+
+offsets.topic.replication.factor=1
+
+transaction.state.log.replication.factor=1
+transaction.state.log.min.isr=1
+
+log.retention.hours=168
+log.retention.check.interval.ms=300000
+
+group.initial.rebalance.delay.ms=0
+```
+3. 运行配置 添加 Kafka101 Kafka102 Kafka103，参数修改为 config/server101.properties 102 103
+4. 分别启动 Kafka101 Kafka102 Kafka103
+```
+-------- 启动Kafka101，发现zk多了很多数据，其中 --------
+   brokers/ids/101 
+   {
+     "features": {},
+     "listener_security_protocol_map": {
+       "PLAINTEXT": "PLAINTEXT"
+     },
+     "endpoints": [
+       "PLAINTEXT://localhost:9091"
+     ],
+     "jmx_port": -1,
+     "port": 9091,
+     "host": "localhost",
+     "version": 5,
+     "timestamp": "1707276552023"
+   }
+然后，第一台还抢到了controler的位置，毕竟只有一台
+   /controller
+   {
+     "version": 2,
+     "brokerid": 101,
+     "timestamp": "1707276552920",
+     "kraftControllerEpoch": -1
+   }
+-------- 启动 Kafka 102 --------  
+Recorded new controller, from now on will use node localhost:9091 (id: 101 rack: null) 
+表示101是控制器，会使用localhost:9091作为控制器
+101控制器感知到了102的启动
+ZK多了一些数据，例如/brokers/ids/102
+   {
+     "features": {},
+     "listener_security_protocol_map": {
+       "PLAINTEXT": "PLAINTEXT"
+     },
+     "endpoints": [
+       "PLAINTEXT://localhost:9092"
+     ],
+     "jmx_port": -1,
+     "port": 9092,
+     "host": "localhost",
+     "version": 5,
+     "timestamp": "1707276714549"
+   }
+-------- 启动 Kafka 103 ----------
+Recorded new controller, from now on will use node localhost:9091 (id: 101 rack: null)
+表示控制器是101
+101控制器感知到了103的启动
+zk上多了些数据 
+   /brokers/ids/103
+   {
+     "features": {},
+     "listener_security_protocol_map": {
+       "PLAINTEXT": "PLAINTEXT"
+     },
+     "endpoints": [
+       "PLAINTEXT://localhost:9093"
+     ],
+     "jmx_port": -1,
+     "port": 9093,
+     "host": "localhost",
+     "version": 5,
+     "timestamp": "1707277233529"
+   }  
+```
+5. 可视化工具 `D:\java\jdk-17.0.4.1\bin\java.exe --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -jar kafdrop-4.0.1.jar --kafka.brokerConnect=localhost:9091,localhost:9092,localhost:9093`
+6. 创建主题 TestTopic，分区3，副本因子2
+
+![img.png](image/image_09.png)
+![img.png](image/image_10.png)
+![img.png](image/image_11.png)
+
 ## Kafka Knowledge
 
 https://www.processon.com/view/5f3e9546f346fb06ded2fdc4
