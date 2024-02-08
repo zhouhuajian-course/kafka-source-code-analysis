@@ -1,5 +1,72 @@
 # Kafka 源码分析
 
+## 源码分析 生产者 BOOTSTRAP_SERVERS 提供三个，会选择那个去连接Kafka
+
+SimpleProducer.java
+
+BOOTSTRAP_SERVERS_CONFIG：
+   use for establishing the initial connection to the Kafka cluster  
+   用来建立连接Kafka集群的初始连接，
+   this list only impacts the initial hosts used to discover the full set of servers.
+   这个列表仅仅影响需要的初始主机列表，为了发现完整的Kafka Servers服务器列表
+```
+props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9091,localhost:9092,localhost:9093");
+// 创建生产者
+KafkaProducer<Integer, String> producer = new KafkaProducer<>(props);
+   // 把Properties转成Map
+   this(Utils.propsToMap(properties), keySerializer, valueSerializer);
+   // 创建ProducerConfig对象，生产者配置对象 其中configs是上面的Map对象
+   this(new ProducerConfig(ProducerConfig.appendSerializerToConfig(configs, keySerializer, valueSerializer)),
+                keySerializer, valueSerializer, null, null, null, Time.SYSTEM);
+   this.producerConfig = config;
+      // 这个ProducerConfig对象的values是HashMap里面有各种配置数据
+      producerConfig.values."bootstrap.servers"
+         ArrayList(localhost:9091,localhost:9092,localhost:9093)         
+             
+// 同步发送
+ProducerRecord<Integer, String> record = new ProducerRecord<>("TestTopic", 1,"test 1");
+```
+
+## 源码分析 发送一条消息 到 TestTopic(3分区 3副本) 指定 Key 生产者源码
+
+SimpleProducer.java
+
+```
+// 没用控制器节点Node连接Kafka 控制器节点是localhost:9092
+props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9091");
+// 创建生产者
+KafkaProducer<Integer, String> producer = new KafkaProducer<>(props);
+// 同步发送
+ProducerRecord<Integer, String> record = new ProducerRecord<>("TestTopic", 1,"test 1");
+RecordMetadata metadata = producer.send(record).get();
+   // 拦截器链 /ˌɪn.təˈsep.tər/
+   ProducerRecord<K, V> interceptedRecord = this.interceptors.onSend(record);
+      // 遍历拦截器 每个拦截器 进行拦截一次
+      for (ProducerInterceptor<K, V> interceptor : this.interceptors) {                       
+         interceptRecord = interceptor.onSend(interceptRecord);
+      }
+   // 执行发送 第一个参数 拦截后的记录 第二个参数 回调
+   doSend(interceptedRecord, callback);
+      // 获取clusterAndWaitTime对象 里面有cluster集群对象 保存整个集群信息 等待元数据 
+      // 第一个参数 主题 TestTopic 第二个参数 分区 null
+      clusterAndWaitTime = waitOnMetadata(record.topic(), record.partition(), nowMs, maxBlockTimeMs);
+          // 可能会一开始拿不到数据
+          Cluster(
+            id = jCuC3DfhTzGo9pn8yF5l8Q, 
+            // 节点列表 (不管客户端连接那个节点，最终都会拿到所有节点)
+            nodes = [localhost:9091 (id: 101 rack: null), localhost:9092 (id: 102 rack: null), localhost:9093 (id: 103 rack: null)],
+            // 分区列表  
+            //    TestTopic 分区0 分区1  分区2 
+            partitions = [
+            Partition(topic = TestTopic, partition = 1, leader = 102, replicas = [102,103,101], isr = [102,103,101], offlineReplicas = []), 
+            Partition(topic = TestTopic, partition = 2, leader = 101, replicas = [101,102,103], isr = [101,102,103], offlineReplicas = []),
+            Partition(topic = TestTopic, partition = 0, leader = 103, replicas = [103,101,102], isr = [103,101,102], offlineReplicas = [])
+            ], 
+            // 集群控制器
+            controller = localhost:9092 (id: 102 rack: null)
+        )
+```
+
 ## 源码 集群 搭建 一台 Windows 三个节点 3.6.1
 
 1. 启动zookeeper集群 端口 2181 2182 2183
@@ -102,30 +169,33 @@ zk上多了些数据
    }  
 ```
 5. 可视化工具 `D:\java\jdk-17.0.4.1\bin\java.exe --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -jar kafdrop-4.0.1.jar --kafka.brokerConnect=localhost:9091,localhost:9092,localhost:9093`
-6. 创建主题 TestTopic，分区3，副本因子2
+6. 创建主题 TestTopic，分区3，每个分区3个副本，副本因子3 (1个leader 2个follower)
 
 ![img.png](image/image_09.png)
 ![img.png](image/image_10.png)
 ![img.png](image/image_11.png)
 
-zk上多了/topics/TestTopic
+zk上多了/brokders/topics/TestTopic
 ```
 {
   "partitions": {
     "0": [
+      103,
       101,
       102
     ],
     "1": [
+      102,
       103,
       101
     ],
     "2": [
+      101,
       102,
       103
     ]
   },
-  "topic_id": "Qbk_tV3MTxu1GPQPmoNd_Q",
+  "topic_id": "1-yusjxCSPO6fTeKl-f9fg",
   "adding_replicas": {},
   "removing_replicas": {},
   "version": 3
