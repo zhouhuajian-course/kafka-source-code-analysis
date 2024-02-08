@@ -1,5 +1,81 @@
 # Kafka 源码分析
 
+## 源码调试 增加 slf4j 调试 日志输出
+
+```
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+
+1. 
+```
+
+## 源码分析 生产者 拉取元数据 过程
+
+```
+// 创建生产者
+KafkaProducer<Integer, String> producer = new KafkaProducer<>(props);
+   // 创建发送器
+   //    (class Sender implements Runnable) 发送器是运行对象 线程对象
+   //    第二个参数 是kafkaClient 是null 最开始 kafkaClient没有创建 NetworkClient
+   this.sender = newSender(logContext, kafkaClient, this.metadata);
+      // 如果没有kafkaClient就创建kafkaClient 第一个参数是生产者配置
+      KafkaClient client = kafkaClient != null ? kafkaClient : ClientUtils.createNetworkClient(
+                producerConfig,
+                this.metrics,
+                "producer",
+                logContext,
+                apiVersions,
+                time,
+                maxInflightRequests,
+                metadata,
+                throttleTimeSensor);
+
+   // 输入输出线程 KafkaThread对象 
+   //    第二个参数是 发送器 会变成 Thread 构造器的 target 参数 运行时会 运行target
+   //    (class KafkaThread extends Thread)
+   this.ioThread = new KafkaThread(ioThreadName, this.sender, true);
+   // 启动io线程，其实是运行 clients.producer.internals.Sender.run()
+   this.ioThread.start();
+      (ioThread 线程) clients.producer.internals.Sender.run()
+        // 主循环 一直运行 直到close关闭被调用 main loop, runs until close is called
+        while (running) 
+           // 运行一次
+           runOnce();
+              // 发送生产者数据
+              long pollTimeout = sendProducerData(currentTimeMs);
+              // 客户端 poll receive 拿到 （应该是响应）
+              // 这里的client 是 NetworkClient implements KafkaClient
+              // 真正跟Kafka服务端通信的client
+              client.poll(pollTimeout, currentTimeMs);
+
+            
+// 同步发送
+ProducerRecord<Integer, String> record = new ProducerRecord<>("TestTopic", 1,"test 1");
+   clusterAndWaitTime = waitOnMetadata(record.topic(), record.partition(), nowMs, maxBlockTimeMs);
+      // 去缓存拿集群元数据
+      cluster = metadata.fetch();
+      // Return cached metadata if we have it, and if the record's partition is either undefined
+      // or within the known partition range
+      // 满足总分区数不为空 并且 (分区 不为空 或者 分区 小于 总分区数) 直接返回元数据
+      // 满足条件 返回集群对象和等待时间
+      if (partitionsCount != null && (partition == null || partition < partitionsCount))
+            return new ClusterAndWaitTime(cluster, 0);
+      // 不断唤醒sender线程 获取集群元数据
+      do 循环
+         // 元数据 请求更新 为主题 TestTopic 请求更新元数据
+         int version = metadata.requestUpdateForTopic(topic);
+         sender.wakeup();
+         // 元数据 等待更新
+         metadata.awaitUpdate(version, remainingWaitMs);
+         // 去缓存拿集群元数据
+         cluster = metadata.fetch();
+      // 满足条件   
+      while (partitionsCount == null || (partition != null && partition >= partitionsCount));
+      // 返回集群对象和等待时间
+      return new ClusterAndWaitTime(cluster, elapsed);
+```
+
 ## 源码分析 生产者 BOOTSTRAP_SERVERS 提供三个，会选择那个去连接Kafka
 
 SimpleProducer.java
@@ -21,10 +97,115 @@ KafkaProducer<Integer, String> producer = new KafkaProducer<>(props);
    this.producerConfig = config;
       // 这个ProducerConfig对象的values是HashMap里面有各种配置数据
       producerConfig.values."bootstrap.servers"
-         ArrayList(localhost:9091,localhost:9092,localhost:9093)         
-             
-// 同步发送
+         ArrayList(localhost:9091,localhost:9092,localhost:9093)        
+   // 把localhost:9091,localhost:9092,localhost:9093转成了InetSocketAddress列表 size=3
+   // 网络套接字地址列表       
+   List<InetSocketAddress> addresses = ClientUtils.parseAndValidateAddresses(config); 
+   // 元数据 bootstrap  /ˈbuːt.stræp/
+   this.metadata.bootstrap(addresses);     
+      // 缓存 元数据缓存 bootstrap
+      this.cache = MetadataCache.bootstrap(addresses);    
+         // 节点Map，遍历地址，生成初始的节点对象 nodeId -1 -2 -3 
+         Map<Integer, Node> nodes = new HashMap<>();
+         int nodeId = -1;
+         for (InetSocketAddress address : addresses) {
+            nodes.put(nodeId, new Node(nodeId, address.getHostString(), address.getPort()));
+            nodeId--;
+         } 
+   this.sender = newSender(logContext, kafkaClient, this.metadata);
+      // 如果没有kafkaClient就创建kafkaClient 第一个参数是生产者配置
+      KafkaClient client = kafkaClient != null ? kafkaClient : ClientUtils.createNetworkClient(
+                producerConfig,
+                this.metrics,
+                "producer",
+                logContext,
+                apiVersions,
+                time,
+                maxInflightRequests,
+                metadata,
+                throttleTimeSensor);
+   this.ioThread.start();
+      (ioThread 线程) clients.producer.internals.Sender.run()
+        while (running) 
+           runOnce();
+              // 可能发送 并且 获取 事务 请求
+              maybeSendAndPollTransactionalRequest()
+                 // 目标节点 走client.leastLoadedNode(time.milliseconds());
+                 // 客户端 最小 负载 的节点 (所有Node中负载最小的那一个。这里的负载最小是通过每个Node在InFlightRequests中还未确认的请求决定的，未确认的请求越多则认为负载越大。)
+                 targetNode = coordinatorType != null ? transactionManager.coordinator(coordinatorType) : client.leastLoadedNode(time.milliseconds());
+                    int inflight = Integer.MAX_VALUE;
+                    Node foundConnecting = null;
+                    Node foundCanConnect = null;
+                    Node foundReady = null;
+                    // 元数据更新器 获取所有节点
+                    // 获取的是cluster对象的nodes属性，在cluster初始化的时候，nodes的顺序会被打乱
+                    // common.Cluster.Cluster(java.lang.String, boolean, java.util.Collection<org.apache.kafka.common.Node>, java.util.Collection<org.apache.kafka.common.PartitionInfo>, java.util.Set<java.lang.String>, java.util.Set<java.lang.String>, java.util.Set<java.lang.String>, org.apache.kafka.common.Node, java.util.Map<java.lang.String,org.apache.kafka.common.Uuid>)
+                    //     // make a randomized, unmodifiable copy of the nodes
+                    //     List<Node> copy = new ArrayList<>(nodes);
+                    //     Collections.shuffle(copy);
+                    //     this.nodes = Collections.unmodifiableList(copy);
+                    List<Node> nodes = this.metadataUpdater.fetchNodes();
+                    // 获取 0 1 2 随机整数，每次都可能随机，不一样
+                    int offset = this.randOffset.nextInt(nodes.size());
+                    // 遍历所有节点 i 0 1 2
+                    for (int i = 0; i < nodes.size(); i++) {
+                        // 随机的offset + 递增的i 模以 3 
+                        int idx = (offset + i) % nodes.size();
+                        // 随机取到的一个节点
+                        Node node = nodes.get(idx);
+                        // 是否能发送请求
+                        if (canSendRequest(node.idString(), now)) {
+                            // inFlistRequests的数量
+                            int currInflight = this.inFlightRequests.count(node.idString());
+                            // 能发请求 inFlightRequests 为0，负载最小，直接返回
+                            if (currInflight == 0) {
+                                return node;
+                            // inFlightRequests 小于 最小记录 则修改inflight的值并找到准备好的节点   
+                            } else if (currInflight < inflight) {
+                                inflight = currInflight;
+                                foundReady = node;
+                            }
+                        // 连接状态 是否准备连接 如果是 找到正在连接的节点    
+                        } else if (connectionStates.isPreparingConnection(node.idString())) {
+                            foundConnecting = node;
+                        // 是否可以连接    
+                        } else if (canConnect(node, now)) {
+                            // 如果找到可以连接为null或者 或者 ... 记录找到可以连接的节点
+                            if (foundCanConnect == null ||
+                                    this.connectionStates.lastConnectAttemptMs(foundCanConnect.idString()) >
+                                            this.connectionStates.lastConnectAttemptMs(node.idString())) {
+                                foundCanConnect = node;
+                            }
+                        } else {
+                            log.trace("Removing node {} from least loaded node selection since it is neither ready " +
+                                    "for sending or connecting", node);
+                        }
+                    // 如果找到准备好的 直接返回    
+                    if (foundReady != null) {
+                        return foundReady;
+                    // 如果找到正在连接的 直接返回    
+                    } else if (foundConnecting != null) {
+                        return foundConnecting;
+                    // 如果找到可以连接 直接返回    
+                    } else if (foundCanConnect != null) {
+                        return foundCanConnect;
+                    } else {
+                        return null;
+                    }
+                // 等待节点准备好 有等待超时    
+                if (!awaitNodeReady(targetNode, coordinatorType)) {
+             long currentTimeMs = time.milliseconds();
+             // 发送生产者数据
+             long pollTimeout = sendProducerData(currentTimeMs);
+                // 准备好的所有节点一直都是一个 103 因为 key = 1 时 partition = 0   "leader": 103,
+                // 客户端会直接发往leader分区的那个节点，不会发往follower分区的节点
+                // 如果再加一条发送，key = 2 partition = 2 "leader": 101
+                // 这时候可以看到，最开始是只有 103，后面只有101，说明客户端确实会根据具体的分区leader去发数据
+                Iterator<Node> iter = result.readyNodes.iterator();
+             client.poll(pollTimeout, currentTimeMs);  
+// 同步发送           
 ProducerRecord<Integer, String> record = new ProducerRecord<>("TestTopic", 1,"test 1");
+  
 ```
 
 ## 源码分析 发送一条消息 到 TestTopic(3分区 3副本) 指定 Key 生产者源码
@@ -651,7 +832,22 @@ log.dirs=kafka-logs
 问题解决
 ```
 
+## 为什么 Kafka 不用 Netty
 
+*来自网络*
+
+```
+上篇文章我们讲述到，我们的 producer 会将消息发送至 RecordAccumulator 中，然后启动 Sender 线程
+我们大概率可以猜测到，我们的 Sender 线程是和我们的 Broker 进行通信的，提到通信，不得不说一下 Netty
+大家都知道，Netty 是一个优秀的 I/O 框架，但 Kafka 在通信方面并没有采用 Netty，让人比较难以理解
+当然，博主也查到了关于 kafka 开发者的回答：
+
+一共两个原因：
+1、由于性能问题，kafka 的通信过程并不需要 netty 那么庞大的通信体系
+2、kafka客户端原始时期，需要让用户将整个东西作为依赖项包含其内，如果引入了 netty，那么每个人依赖的版本号不同，将会产生巨大的兼容问题
+3、kafka的安全层和一些另外的问题，需要 kafka 自己来解决，而这些烦恼的问题，netty 中已经解决了
+博主感觉，极大概率由于历史原因，现在就算换成 netty，一些代码也不容易重构，更何况现在 kafka 自研的 I/O 通信模型反响还可以，所以 kafka 一直都没使用 netty 的想法。
+```
 
 ## Basic
 
