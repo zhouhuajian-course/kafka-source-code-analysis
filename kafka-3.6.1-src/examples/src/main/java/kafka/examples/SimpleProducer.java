@@ -21,13 +21,13 @@ public class SimpleProducer {
         // 同步发送
         ProducerRecord<Integer, String> record = new ProducerRecord<>("TestTopic", 1,"test 1");
         RecordMetadata metadata = producer.send(record).get();
-        ProducerRecord<Integer, String> record2 = new ProducerRecord<>("TestTopic", 2,"test 2");
-        RecordMetadata metadata2 = producer.send(record2).get();
-        System.out.println("主题:" + metadata2.topic());
+        // ProducerRecord<Integer, String> record2 = new ProducerRecord<>("TestTopic", 2,"test 2");
+        // RecordMetadata metadata2 = producer.send(record2).get();
+        System.out.println("主题:" + metadata.topic());
         // key = 1 时 partition = 0   "leader": 103,
         // key = 2 时 partition = 2   "leader": 101,
-        System.out.println("分区:" + metadata2.partition());
-        System.out.println("偏移:" + metadata2.offset());
+        System.out.println("分区:" + metadata.partition());
+        System.out.println("偏移:" + metadata.offset());
         producer.close();
     }
 }

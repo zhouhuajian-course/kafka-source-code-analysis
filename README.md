@@ -1,5 +1,171 @@
 # Kafka 源码分析
 
+## 生产者 获取元数据 继续分析
+
+可以快速 断点到 下面两个位置 快速分析
+1. clients.NetworkClient.handleCompletedReceives 的 String source = receive.source();
+2. clients.NetworkClient.DefaultMetadataUpdater.handleSuccessfulResponse
+
+最终结论：  
+1. 如果填写 localhost:9091,localhost:9092,localhost:9093  
+   最终随机取一台，发送请求的node获取集群元数据
+2. 如果是后续真正发送消息，会根据元数据，消息具体分区，定位到具体的node节点，  
+   会把请求发送到具体的分区leader所在的节点，不会发到follower节点
+
+```
+RecordMetadata metadata = producer.send(record).get();
+   clusterAndWaitTime = waitOnMetadata(record.topic(), record.partition(), nowMs, maxBlockTimeMs);
+      do {
+         // 不断 唤醒 sender 线程 让他帮忙获取元数据
+         sender.wakeup();       
+         metadata.awaitUpdate(version, remainingWaitMs);
+     } while (partitionsCount == null || (partition != null && partition >= partitionsCount));
+
+sender线程 第一次 runonce
+   client.poll(pollTimeout, currentTimeMs);
+      // 元数据更新器 可能更新 传入当前时间戳
+      long metadataTimeout = metadataUpdater.maybeUpdate(now);
+         // should we update our metadata?
+         // 是否需要更新元数据？
+         long timeToNextMetadataUpdate = metadata.timeToNextUpdate(now);
+         long waitForMetadataFetch = hasFetchInProgress() ? defaultRequestTimeoutMs : 0;
+         long metadataTimeout = Math.max(timeToNextMetadataUpdate, waitForMetadataFetch);
+         // 不需要更新元数据
+         if (metadataTimeout > 0) {
+             return metadataTimeout;
+         }
+         // 选择一个负载最少的node
+         Node node = leastLoadedNode(now);
+         // 可能更新 传了时间戳和节点
+         return maybeUpdate(now, node);
+            // 节点连接ID
+            String nodeConnectionId = node.idString();
+            // 是否节点能够发送请求
+            if (canSendRequest(nodeConnectionId, now)) {
+                ...
+                return defaultRequestTimeoutMs;
+            }
+            // 是否能够连接
+            if (connectionStates.canConnect(nodeConnectionId, now)) {
+                // 初始化连接 为了发送 元数据 请求
+                log.debug("Initialize connection to node {} for sending metadata request", node);
+                initiateConnect(node, now);
+                    // 节点连接ID
+                    String nodeConnectionId = node.idString();
+                    // 连接状态 修改为正在连接
+                    connectionStates.connecting(nodeConnectionId, now, node.host());
+                    // 连接地址
+                    InetAddress address = connectionStates.currentAddress(nodeConnectionId);
+                    log.debug("1 {} using address {}", node, address);
+                    // 连接节点
+                    selector.connect(nodeConnectionId,
+                       new InetSocketAddress(address, node.port()),
+                       this.socketSendBuffer,
+                       this.socketReceiveBuffer);
+                       // 创建 socketChannel
+                       SocketChannel socketChannel = SocketChannel.open();
+                       // 执行连接
+                       boolean connected = doConnect(socketChannel, address);
+                           // socketChannel 连接 节点
+                           return channel.connect(address);
+       
+                return reconnectBackoffMs;
+            }
+
+            // connected, but can't send more OR connecting
+            // In either case, we just need to wait for a network event to let us know the selected
+            // connection might be usable again.
+            return Long.MAX_VALUE;
+            
+sender线程 第二次 runonce
+   client.poll(pollTimeout, currentTimeMs);    
+      long metadataTimeout = metadataUpdater.maybeUpdate(now);
+         return maybeUpdate(now, node);      
+            // 这一次这个节点 可以发送请求了
+            if (canSendRequest(nodeConnectionId, now)) {
+                Metadata.MetadataRequestAndVersion requestAndVersion = metadata.newMetadataRequestAndVersion(now);
+                // 元数据请求 构建器 
+                MetadataRequest.Builder metadataRequest = requestAndVersion.requestBuilder;
+                // 发送内部的元数据请求
+                sendInternalMetadataRequest(metadataRequest, nodeConnectionId, now);
+                    // 创建客户端请求
+                    ClientRequest clientRequest = newClientRequest(nodeConnectionId, builder, now, true);
+                    // 执行发送 第二个参数 是否是内部请求 true
+                    doSend(clientRequest, true, now);
+                       // 目的地
+                       String destination = clientRequest.destination();
+                       // 请求头
+                       RequestHeader header = clientRequest.makeHeader(request.version());
+                       
+                       Send send = request.toSend(header);
+                       // 正在发送的请求
+                       InFlightRequest inFlightRequest = new InFlightRequest(
+                               clientRequest,
+                               header,
+                               isInternalRequest,
+                               request,
+                               send,
+                               now);
+                       // 正在发送的所有请求添加该请求        
+                       this.inFlightRequests.add(inFlightRequest);
+                          // 目的地
+                          String destination = request.destination;
+                          // 这个目的地 这个节点 的请求队列
+                          Deque<NetworkClient.InFlightRequest> reqs = this.requests.get(destination);
+                          // 如果这个节点 请求队列为null 创建 并加入到 requests
+                          if (reqs == null) {
+                              reqs = new ArrayDeque<>();
+                              this.requests.put(destination, reqs);
+                          }
+                          // 这个请求队列，加到最前面
+                          reqs.addFirst(request);
+                          // 所有正在发送的请求总数+1
+                          inFlightRequestCount.incrementAndGet();
+                       selector.send(new NetworkSend(clientRequest.destination(), send));
+                inProgress = new InProgressData(requestAndVersion.requestVersion, requestAndVersion.isPartialUpdate);
+                return defaultRequestTimeoutMs;
+            }    
+sender线程 第三次 runonce 响应到了
+   client.poll(pollTimeout, currentTimeMs);    
+     List<ClientResponse> responses = new ArrayList<>();
+        handleCompletedSends(responses, updatedNow);
+        // 处理完成接收
+        handleCompletedReceives(responses, updatedNow);
+            // 遍历 请求完成 接收到的数据 一次接收多个请求的结果
+            for (NetworkReceive receive : this.selector.completedReceives()) {
+               String source = receive.source();
+               // 正在发送的请求 完成 该请求
+               InFlightRequest req = inFlightRequests.completeNext(source);
+               // 解析响应
+               AbstractResponse response = parseResponse(receive.payload(), req.header);
+               // 如果是内部请求 厄齐尔是 元数据请求
+               if (req.isInternalRequest && response instanceof MetadataResponse)
+                   // 元数据更新器 处理成功响应
+                   metadataUpdater.handleSuccessfulResponse(req.header, now, (MetadataResponse) response);
+                         // 元数据 更新
+                         this.metadata.update(inProgress.requestVersion, response, inProgress.isPartialUpdate, now);
+                              // 缓存 处理元数据响应
+                              this.cache = handleMetadataResponse(response, isPartialUpdate, nowMs);
+
+               else if (req.isInternalRequest && response instanceof ApiVersionsResponse)
+                   handleApiVersionsResponse(responses, req, now, (ApiVersionsResponse) response);
+               // 普通请求
+               else
+                   responses.add(req.completed(response, now));
+           }
+        // 处理断开连接
+        handleDisconnections(responses, updatedNow);
+        // 处理连接
+        handleConnections();
+        handleInitiateApiVersionRequests(updatedNow);
+        // 处理超时连接
+        handleTimedOutConnections(responses, updatedNow);
+        // 处理超时请求
+        handleTimedOutRequests(responses, updatedNow);
+        // 完成响应
+        completeResponses(responses);           
+```
+
 ## 源码调试 增加 slf4j 调试 日志输出
 
 ```
