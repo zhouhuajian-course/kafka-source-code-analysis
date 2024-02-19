@@ -392,7 +392,7 @@
             Topics are <strong>partitioned</strong>, meaning a topic is spread over a number of "buckets" located on different Kafka brokers. This distributed placement of your data is very important for scalability because it allows client applications to both read and write the data from/to many brokers at the same time. When a new event is published to a topic, it is actually appended to one of the topic's partitions. Events with the same event key (e.g., a customer or vehicle ID) are written to the same partition, and Kafka <a href="/documentation/#semantics">guarantees</a> that any consumer of a given topic-partition will always read that partition's events in exactly the same order as they were written.
         </p>
         <figure class="figure">
-            <img src="https://kafka.apache.org/images/streams-and-tables-p1_p4.png" class="figure-image">
+            <p>.......</p>
             <figcaption class="figure-caption">
                 Figure: This example topic has four partitions P1–P4. Two different producer clients are publishing,
                 independently from each other, new events to the topic by writing events over the network to the topic's
@@ -1290,58 +1290,16 @@ wordCounts.toStream<span class="token punctuation">(</span><span class="token pu
 
         <h4 class="anchor-heading"><a id="mirrormakerheartbeatconfigs" class="anchor-link"></a><a href="#mirrormakerheartbeatconfigs">3.8.4 MirrorMaker HeartBeat Configs</a></h4>
         Below is the configuration of MirrorMaker 2 heartbeat connector for checking connectivity between connectors and clusters.
-        <ul class="config-list">
-            <li>
-                <h4><a id="emit.heartbeats.enabled"></a><a id="mirror_heartbeat_emit.heartbeats.enabled" href="#mirror_heartbeat_emit.heartbeats.enabled">emit.heartbeats.enabled</a></h4>
-                <p>Whether to emit heartbeats to target cluster.</p>
-                <table><tbody>
-                <tr><th>Type:</th><td>boolean</td></tr>
-                <tr><th>Default:</th><td>true</td></tr>
-                <tr><th>Valid Values:</th><td></td></tr>
-                <tr><th>Importance:</th><td>low</td></tr>
-                </tbody></table>
-            </li>
-            <li>
-                <h4><a id="emit.heartbeats.interval.seconds"></a><a id="mirror_heartbeat_emit.heartbeats.interval.seconds" href="#mirror_heartbeat_emit.heartbeats.interval.seconds">emit.heartbeats.interval.seconds</a></h4>
-                <p>Frequency of heartbeats.</p>
-                <table><tbody>
-                <tr><th>Type:</th><td>long</td></tr>
-                <tr><th>Default:</th><td>1</td></tr>
-                <tr><th>Valid Values:</th><td></td></tr>
-                <tr><th>Importance:</th><td>low</td></tr>
-                </tbody></table>
-            </li>
-            <li>
-                <h4><a id="heartbeats.topic.replication.factor"></a><a id="mirror_heartbeat_heartbeats.topic.replication.factor" href="#mirror_heartbeat_heartbeats.topic.replication.factor">heartbeats.topic.replication.factor</a></h4>
-                <p>Replication factor for heartbeats topic.</p>
-                <table><tbody>
-                <tr><th>Type:</th><td>short</td></tr>
-                <tr><th>Default:</th><td>3</td></tr>
-                <tr><th>Valid Values:</th><td></td></tr>
-                <tr><th>Importance:</th><td>low</td></tr>
-                </tbody></table>
-            </li>
-        </ul>
+
+        <p>......</p>
 
 
 
         <h3 class="anchor-heading"><a id="systemproperties" class="anchor-link"></a><a href="#systemproperties">3.9 System Properties</a></h3>
         Kafka supports some configuration that can be enabled through Java system properties. System properties are usually set by passing the -D flag to the Java virtual machine in which Kafka components are running.
         Below are the supported system properties.
-        <ul class="config-list">
-            <li>
-                <h4><a id="org.apache.kafka.disallowed.login.modules"></a><a id="systemproperties_org.apache.kafka.disallowed.login.modules" href="#systemproperties_org.apache.kafka.disallowed.login.modules">org.apache.kafka.disallowed.login.modules</a></h4>
-                <p>This system property is used to disable the problematic login modules usage in SASL JAAS configuration. This property accepts comma-separated list of loginModule names. By default <b>com.sun.security.auth.module.JndiLoginModule</b> loginModule is disabled.
-                </p><p>If users want to enable JndiLoginModule, users need to explicitly reset the system property like below. We advise the users to validate configurations and only allow trusted JNDI configurations. For more details <a href="https://nvd.nist.gov/vuln/detail/CVE-2023-25194">CVE-2023-25194</a>.
-            </p><p></p><pre class="brush: bash;"> -Dorg.apache.kafka.disallowed.login.modules=</pre>
-                <p>To disable more loginModules, update the system property with comma-separated loginModule names. Make sure to explicitly add <b>JndiLoginModule</b> module name to the comma-separated list like below.
-                </p><p></p><pre class="brush: bash;"> -Dorg.apache.kafka.disallowed.login.modules=com.sun.security.auth.module.JndiLoginModule,com.ibm.security.auth.module.LdapLoginModule,com.ibm.security.auth.module.Krb5LoginModule</pre>
-                <table><tbody>
-                <tr><th>Since:</th><td>3.4.0</td></tr>
-                <tr><th>Default Value:</th><td>com.sun.security.auth.module.JndiLoginModule</td></tr>
-                </tbody></table>
-            </li>
-        </ul>
+
+        <p>......</p>
 
         <h3 class="anchor-heading"><a id="tieredstorageconfigs" class="anchor-link"></a><a href="#tieredstorageconfigs">3.10 Tiered Storage Configs</a></h3>
         Below are the configuration properties for Tiered Storage.
@@ -1863,7 +1821,7 @@ wordCounts.toStream<span class="token punctuation">(</span><span class="token pu
 
         Here is a high-level picture that shows the logical structure of a Kafka log with the offset for each message.
         <p>
-            <img class="centered" src="https://kafka.apache.org/36/images/log_cleaner_anatomy.png">
+            ......
         </p><p>
         The head of the log is identical to a traditional Kafka log. It has dense, sequential offsets and retains all messages. Log compaction adds an option for handling the tail of the log. The picture above shows a log
         with a compacted tail. Note that the messages in the tail of the log retain the original offset assigned when they were first written—that never changes. Note also that all offsets remain valid positions in
@@ -3748,40 +3706,7 @@ $ bin/kafka-acls.sh \
     <h5 class="anchor-heading"><a id="kraft_controller_monitoring" class="anchor-link"></a><a href="#kraft_controller_monitoring">KRaft Controller Monitoring Metrics</a></h5>
     <p>..........</p>
     <h5 class="anchor-heading"><a id="kraft_broker_monitoring" class="anchor-link"></a><a href="#kraft_broker_monitoring">KRaft Broker Monitoring Metrics</a></h5>
-    <table class="data-table">
-        <tbody>
-        <tr>
-            <th>Metric/Attribute name</th>
-            <th>Description</th>
-            <th>Mbean name</th>
-        </tr>
-        <tr>
-            <td>Last Applied Record Offset</td>
-            <td>The offset of the last record from the cluster metadata partition that was applied by the broker</td>
-            <td>kafka.server:type=broker-metadata-metrics,name=last-applied-record-offset</td>
-        </tr>
-        <tr>
-            <td>Last Applied Record Timestamp</td>
-            <td>The timestamp of the last record from the cluster metadata partition that was applied by the broker.</td>
-            <td>kafka.server:type=broker-metadata-metrics,name=last-applied-record-timestamp</td>
-        </tr>
-        <tr>
-            <td>Last Applied Record Lag Ms</td>
-            <td>The difference between now and the timestamp of the last record from the cluster metadata partition that was applied by the broker</td>
-            <td>kafka.server:type=broker-metadata-metrics,name=last-applied-record-lag-ms</td>
-        </tr>
-        <tr>
-            <td>Metadata Load Error Count</td>
-            <td>The number of errors encountered by the BrokerMetadataListener while loading the metadata log and generating a new MetadataDelta based on it.</td>
-            <td>kafka.server:type=broker-metadata-metrics,name=metadata-load-error-count</td>
-        </tr>
-        <tr>
-            <td>Metadata Apply Error Count</td>
-            <td>The number of errors encountered by the BrokerMetadataPublisher while applying a new MetadataImage based on the latest MetadataDelta.</td>
-            <td>kafka.server:type=broker-metadata-metrics,name=metadata-apply-error-count</td>
-        </tr>
-        </tbody>
-    </table>
+    <p>..........</p>
     <h4><a id="selector_monitoring" href="#selector_monitoring">Common monitoring metrics for producer/consumer/connect/streams</a></h4>
 
     The following metrics are available on producer/consumer/connector/streams instances. For specific metrics, please see following sections.
@@ -3802,84 +3727,7 @@ $ bin/kafka-acls.sh \
 
     <h5 class="anchor-heading"><a id="producer_sender_monitoring" class="anchor-link"></a><a href="#producer_sender_monitoring">Producer Sender Metrics</a></h5>
 
-    <table class="data-table"><tbody>
-    <tr>
-        <td colspan="3" class="mbeanName" style="background-color:#ccc; font-weight: bold;">kafka.producer:type=producer-metrics,client-id="{client-id}"</td></tr>
-    <tr>
-        <th style="width: 90px"></th>
-        <th>Attribute name</th>
-        <th>Description</th>
-    </tr>
-    <tr>
-        <td></td><td>batch-size-avg</td><td>The average number of bytes sent per partition per-request.</td></tr>
-    <tr>
-        <td></td><td>batch-size-max</td><td>The max number of bytes sent per partition per-request.</td></tr>
-    <tr>
-        <td></td><td>batch-split-rate</td><td>The average number of batch splits per second</td></tr>
-    <tr>
-        <td></td><td>batch-split-total</td><td>The total number of batch splits</td></tr>
-    <tr>
-        <td></td><td>compression-rate-avg</td><td>The average compression rate of record batches, defined as the average ratio of the compressed batch size over the uncompressed size.</td></tr>
-    <tr>
-        <td></td><td>metadata-age</td><td>The age in seconds of the current producer metadata being used.</td></tr>
-    <tr>
-        <td></td><td>produce-throttle-time-avg</td><td>The average time in ms a request was throttled by a broker</td></tr>
-    <tr>
-        <td></td><td>produce-throttle-time-max</td><td>The maximum time in ms a request was throttled by a broker</td></tr>
-    <tr>
-        <td></td><td>record-error-rate</td><td>The average per-second number of record sends that resulted in errors</td></tr>
-    <tr>
-        <td></td><td>record-error-total</td><td>The total number of record sends that resulted in errors</td></tr>
-    <tr>
-        <td></td><td>record-queue-time-avg</td><td>The average time in ms record batches spent in the send buffer.</td></tr>
-    <tr>
-        <td></td><td>record-queue-time-max</td><td>The maximum time in ms record batches spent in the send buffer.</td></tr>
-    <tr>
-        <td></td><td>record-retry-rate</td><td>The average per-second number of retried record sends</td></tr>
-    <tr>
-        <td></td><td>record-retry-total</td><td>The total number of retried record sends</td></tr>
-    <tr>
-        <td></td><td>record-send-rate</td><td>The average number of records sent per second.</td></tr>
-    <tr>
-        <td></td><td>record-send-total</td><td>The total number of records sent.</td></tr>
-    <tr>
-        <td></td><td>record-size-avg</td><td>The average record size</td></tr>
-    <tr>
-        <td></td><td>record-size-max</td><td>The maximum record size</td></tr>
-    <tr>
-        <td></td><td>records-per-request-avg</td><td>The average number of records per request.</td></tr>
-    <tr>
-        <td></td><td>request-latency-avg</td><td>The average request latency in ms</td></tr>
-    <tr>
-        <td></td><td>request-latency-max</td><td>The maximum request latency in ms</td></tr>
-    <tr>
-        <td></td><td>requests-in-flight</td><td>The current number of in-flight requests awaiting a response.</td></tr>
-    <tr>
-        <td colspan="3" class="mbeanName" style="background-color:#ccc; font-weight: bold;">kafka.producer:type=producer-topic-metrics,client-id="{client-id}",topic="{topic}"</td></tr>
-    <tr>
-        <th style="width: 90px"></th>
-        <th>Attribute name</th>
-        <th>Description</th>
-    </tr>
-    <tr>
-        <td></td><td>byte-rate</td><td>The average number of bytes sent per second for a topic.</td></tr>
-    <tr>
-        <td></td><td>byte-total</td><td>The total number of bytes sent for a topic.</td></tr>
-    <tr>
-        <td></td><td>compression-rate</td><td>The average compression rate of record batches for a topic, defined as the average ratio of the compressed batch size over the uncompressed size.</td></tr>
-    <tr>
-        <td></td><td>record-error-rate</td><td>The average per-second number of record sends that resulted in errors for a topic</td></tr>
-    <tr>
-        <td></td><td>record-error-total</td><td>The total number of record sends that resulted in errors for a topic</td></tr>
-    <tr>
-        <td></td><td>record-retry-rate</td><td>The average per-second number of retried record sends for a topic</td></tr>
-    <tr>
-        <td></td><td>record-retry-total</td><td>The total number of retried record sends for a topic</td></tr>
-    <tr>
-        <td></td><td>record-send-rate</td><td>The average number of records sent per second for a topic.</td></tr>
-    <tr>
-        <td></td><td>record-send-total</td><td>The total number of records sent for a topic.</td></tr>
-    </tbody></table>
+    <p>..........</p>
 
 
 
@@ -5480,91 +5328,14 @@ sasl.mechanism=OAUTHBEARER<span aria-hidden="true" class="line-numbers-rows"><sp
                             <li>The default implementation of SASL/OAUTHBEARER in Kafka creates and validates <a href="https://tools.ietf.org/html/rfc7515#appendix-A.5">Unsecured JSON Web Tokens</a>.
                                 While suitable only for non-production use, it does provide the flexibility to create arbitrary tokens in a DEV or TEST environment.</li>
                             <li>Here are the various supported JAAS module options on the client side (and on the broker side if OAUTHBEARER is the inter-broker protocol):
-                                <table>
-                                    <tbody><tr>
-                                        <th>JAAS Module Option for Unsecured Token Creation</th>
-                                        <th>Documentation</th>
-                                    </tr>
-                                    <tr>
-                                        <td><tt>unsecuredLoginStringClaim_&lt;claimname&gt;="value"</tt></td>
-                                        <td>Creates a <tt>String</tt> claim with the given name and value. Any valid
-                                            claim name can be specified except '<tt>iat</tt>' and '<tt>exp</tt>' (these are
-                                            automatically generated).</td>
-                                    </tr>
-                                    <tr>
-                                        <td><tt>unsecuredLoginNumberClaim_&lt;claimname&gt;="value"</tt></td>
-                                        <td>Creates a <tt>Number</tt> claim with the given name and value. Any valid
-                                            claim name can be specified except '<tt>iat</tt>' and '<tt>exp</tt>' (these are
-                                            automatically generated).</td>
-                                    </tr>
-                                    <tr>
-                                        <td><tt>unsecuredLoginListClaim_&lt;claimname&gt;="value"</tt></td>
-                                        <td>Creates a <tt>String List</tt> claim with the given name and values parsed
-                                            from the given value where the first character is taken as the delimiter. For
-                                            example: <tt>unsecuredLoginListClaim_fubar="|value1|value2"</tt>. Any valid
-                                            claim name can be specified except '<tt>iat</tt>' and '<tt>exp</tt>' (these are
-                                            automatically generated).</td>
-                                    </tr>
-                                    <tr>
-                                        <td><tt>unsecuredLoginExtension_&lt;extensionname&gt;="value"</tt></td>
-                                        <td>Creates a <tt>String</tt> extension with the given name and value.
-                                            For example: <tt>unsecuredLoginExtension_traceId="123"</tt>. A valid extension name
-                                            is any sequence of lowercase or uppercase alphabet characters. In addition, the "auth" extension name is reserved.
-                                            A valid extension value is any combination of characters with ASCII codes 1-127.
-                                        </td></tr>
-                                    <tr>
-                                        <td><tt>unsecuredLoginPrincipalClaimName</tt></td>
-                                        <td>Set to a custom claim name if you wish the name of the <tt>String</tt>
-                                            claim holding the principal name to be something other than '<tt>sub</tt>'.</td>
-                                    </tr>
-                                    <tr>
-                                        <td><tt>unsecuredLoginLifetimeSeconds</tt></td>
-                                        <td>Set to an integer value if the token expiration is to be set to something
-                                            other than the default value of 3600 seconds (which is 1 hour). The
-                                            '<tt>exp</tt>' claim will be set to reflect the expiration time.</td>
-                                    </tr>
-                                    <tr>
-                                        <td><tt>unsecuredLoginScopeClaimName</tt></td>
-                                        <td>Set to a custom claim name if you wish the name of the <tt>String</tt> or
-                                            <tt>String List</tt> claim holding any token scope to be something other than
-                                            '<tt>scope</tt>'.</td>
-                                    </tr>
-                                    </tbody></table>
+                                <p>......</p>
                             </li>
                         </ul>
                     </li>
                     <li><h5><a id="security_sasl_oauthbearer_unsecured_validation" href="#security_sasl_oauthbearer_unsecured_validation">Unsecured Token Validation Options for SASL/OAUTHBEARER</a></h5>
                         <ul>
                             <li>Here are the various supported JAAS module options on the broker side for <a href="https://tools.ietf.org/html/rfc7515#appendix-A.5">Unsecured JSON Web Token</a> validation:
-                                <table>
-                                    <tbody><tr>
-                                        <th>JAAS Module Option for Unsecured Token Validation</th>
-                                        <th>Documentation</th>
-                                    </tr>
-                                    <tr>
-                                        <td><tt>unsecuredValidatorPrincipalClaimName="value"</tt></td>
-                                        <td>Set to a non-empty value if you wish a particular <tt>String</tt> claim
-                                            holding a principal name to be checked for existence; the default is to check
-                                            for the existence of the '<tt>sub</tt>' claim.</td>
-                                    </tr>
-                                    <tr>
-                                        <td><tt>unsecuredValidatorScopeClaimName="value"</tt></td>
-                                        <td>Set to a custom claim name if you wish the name of the <tt>String</tt> or
-                                            <tt>String List</tt> claim holding any token scope to be something other than
-                                            '<tt>scope</tt>'.</td>
-                                    </tr>
-                                    <tr>
-                                        <td><tt>unsecuredValidatorRequiredScope="value"</tt></td>
-                                        <td>Set to a space-delimited list of scope values if you wish the
-                                            <tt>String/String List</tt> claim holding the token scope to be checked to
-                                            make sure it contains certain values.</td>
-                                    </tr>
-                                    <tr>
-                                        <td><tt>unsecuredValidatorAllowableClockSkewMs="value"</tt></td>
-                                        <td>Set to a positive integer value if you wish to allow up to some number of
-                                            positive milliseconds of clock skew (the default is 0).</td>
-                                    </tr>
-                                    </tbody></table>
+                                <p>......</p>
                             </li>
                             <li>The default unsecured SASL/OAUTHBEARER implementation may be overridden (and must be overridden in production environments)
                                 using custom login and SASL Server callback handlers.</li>
@@ -5578,23 +5349,7 @@ sasl.mechanism=OAUTHBEARER<span aria-hidden="true" class="line-numbers-rows"><sp
                         and are as follows. See the documentation for these properties elsewhere for
                         details.  The default values are usually reasonable, in which case these
                         configuration parameters would not need to be explicitly set.
-                        <table>
-                            <tbody><tr>
-                                <th>Producer/Consumer/Broker Configuration Property</th>
-                            </tr>
-                            <tr>
-                                <td><tt>sasl.login.refresh.window.factor</tt></td>
-                            </tr>
-                            <tr>
-                                <td><tt>sasl.login.refresh.window.jitter</tt></td>
-                            </tr>
-                            <tr>
-                                <td><tt>sasl.login.refresh.min.period.seconds</tt></td>
-                            </tr>
-                            <tr>
-                                <td><tt>sasl.login.refresh.min.buffer.seconds</tt></td>
-                            </tr>
-                            </tbody></table>
+                        <p>......</p>
                     </li>
                     <li><h5><a id="security_sasl_oauthbearer_prod" href="#security_sasl_oauthbearer_prod">Secure/Production Use of SASL/OAUTHBEARER</a></h5>
                         Production use cases will require writing an implementation of
@@ -5836,199 +5591,7 @@ RULE:[n:string](regexp)s/pattern/replacement/g/U<span aria-hidden="true" class="
         <h4 class="anchor-heading"><a id="security_authz_cli" class="anchor-link"></a><a href="#security_authz_cli">Command Line Interface</a></h4>
         Kafka Authorization management CLI can be found under bin directory with all the other CLIs. The CLI script is called <b>kafka-acls.sh</b>. Following lists all the options that the script supports:
         <p></p>
-        <table class="data-table">
-            <tbody><tr>
-                <th>Option</th>
-                <th>Description</th>
-                <th>Default</th>
-                <th>Option type</th>
-            </tr>
-            <tr>
-                <td>--add</td>
-                <td>Indicates to the script that user is trying to add an acl.</td>
-                <td></td>
-                <td>Action</td>
-            </tr>
-            <tr>
-                <td>--remove</td>
-                <td>Indicates to the script that user is trying to remove an acl.</td>
-                <td></td>
-                <td>Action</td>
-            </tr>
-            <tr>
-                <td>--list</td>
-                <td>Indicates to the script that user is trying to list acls.</td>
-                <td></td>
-                <td>Action</td>
-            </tr>
-            <tr>
-                <td>--bootstrap-server</td>
-                <td>A list of host/port pairs to use for establishing the connection to the Kafka cluster. Only one of --bootstrap-server or --authorizer option must be specified.</td>
-                <td></td>
-                <td>Configuration</td>
-            </tr>
-            <tr>
-                <td>--command-config</td>
-                <td>A property file containing configs to be passed to Admin Client. This option can only be used with --bootstrap-server option.</td>
-                <td></td>
-                <td>Configuration</td>
-            </tr>
-            <tr>
-                <td>--cluster</td>
-                <td>Indicates to the script that the user is trying to interact with acls on the singular cluster resource.</td>
-                <td></td>
-                <td>ResourcePattern</td>
-            </tr>
-            <tr>
-                <td>--topic [topic-name]</td>
-                <td>Indicates to the script that the user is trying to interact with acls on topic resource pattern(s).</td>
-                <td></td>
-                <td>ResourcePattern</td>
-            </tr>
-            <tr>
-                <td>--group [group-name]</td>
-                <td>Indicates to the script that the user is trying to interact with acls on consumer-group resource pattern(s)</td>
-                <td></td>
-                <td>ResourcePattern</td>
-            </tr>
-            <tr>
-                <td>--transactional-id [transactional-id]</td>
-                <td>The transactionalId to which ACLs should be added or removed. A value of * indicates the ACLs should apply to all transactionalIds.</td>
-                <td></td>
-                <td>ResourcePattern</td>
-            </tr>
-            <tr>
-                <td>--delegation-token [delegation-token]</td>
-                <td>Delegation token to which ACLs should be added or removed. A value of * indicates ACL should apply to all tokens.</td>
-                <td></td>
-                <td>ResourcePattern</td>
-            </tr>
-            <tr>
-                <td>--user-principal [user-principal]</td>
-                <td>A user resource to which ACLs should be added or removed. This is currently supported in relation with delegation tokens.
-                    A value of * indicates ACL should apply to all users.</td>
-                <td></td>
-                <td>ResourcePattern</td>
-            </tr>
-            <tr>
-                <td>--resource-pattern-type [pattern-type]</td>
-                <td>Indicates to the script the type of resource pattern, (for --add), or resource pattern filter, (for --list and --remove), the user wishes to use.<br>
-                    When adding acls, this should be a specific pattern type, e.g. 'literal' or 'prefixed'.<br>
-                    When listing or removing acls, a specific pattern type filter can be used to list or remove acls from a specific type of resource pattern,
-                    or the filter values of 'any' or 'match' can be used, where 'any' will match any pattern type, but will match the resource name exactly,
-                    and 'match' will perform pattern matching to list or remove all acls that affect the supplied resource(s).<br>
-                    WARNING: 'match', when used in combination with the '--remove' switch, should be used with care.
-                </td>
-                <td>literal</td>
-                <td>Configuration</td>
-            </tr>
-            <tr>
-                <td>--allow-principal</td>
-                <td>Principal is in PrincipalType:name format that will be added to ACL with Allow permission. Default PrincipalType string "User" is case sensitive. <br>You can specify multiple --allow-principal in a single command.</td>
-                <td></td>
-                <td>Principal</td>
-            </tr>
-            <tr>
-                <td>--deny-principal</td>
-                <td>Principal is in PrincipalType:name format that will be added to ACL with Deny permission. Default PrincipalType string "User" is case sensitive. <br>You can specify multiple --deny-principal in a single command.</td>
-                <td></td>
-                <td>Principal</td>
-            </tr>
-            <tr>
-                <td>--principal</td>
-                <td>Principal is in PrincipalType:name format that will be used along with --list option. Default PrincipalType string "User" is case sensitive. This will list the ACLs for the specified principal. <br>You can specify multiple --principal in a single command.</td>
-                <td></td>
-                <td>Principal</td>
-            </tr>
-            <tr>
-                <td>--allow-host</td>
-                <td>IP address from which principals listed in --allow-principal will have access.</td>
-                <td> if --allow-principal is specified defaults to * which translates to "all hosts"</td>
-                <td>Host</td>
-            </tr>
-            <tr>
-                <td>--deny-host</td>
-                <td>IP address from which principals listed in --deny-principal will be denied access.</td>
-                <td>if --deny-principal is specified defaults to * which translates to "all hosts"</td>
-                <td>Host</td>
-            </tr>
-            <tr>
-                <td>--operation</td>
-                <td>Operation that will be allowed or denied.<br>
-                    Valid values are:
-                    <ul>
-                        <li>Read</li>
-                        <li>Write</li>
-                        <li>Create</li>
-                        <li>Delete</li>
-                        <li>Alter</li>
-                        <li>Describe</li>
-                        <li>ClusterAction</li>
-                        <li>DescribeConfigs</li>
-                        <li>AlterConfigs</li>
-                        <li>IdempotentWrite</li>
-                        <li>CreateTokens</li>
-                        <li>DescribeTokens</li>
-                        <li>All</li>
-                    </ul>
-                </td>
-                <td>All</td>
-                <td>Operation</td>
-            </tr>
-            <tr>
-                <td>--producer</td>
-                <td> Convenience option to add/remove acls for producer role. This will generate acls that allows WRITE,
-                    DESCRIBE and CREATE on topic.</td>
-                <td></td>
-                <td>Convenience</td>
-            </tr>
-            <tr>
-                <td>--consumer</td>
-                <td> Convenience option to add/remove acls for consumer role. This will generate acls that allows READ,
-                    DESCRIBE on topic and READ on consumer-group.</td>
-                <td></td>
-                <td>Convenience</td>
-            </tr>
-            <tr>
-                <td>--idempotent</td>
-                <td>Enable idempotence for the producer. This should be used in combination with the --producer option.<br>
-                    Note that idempotence is enabled automatically if the producer is authorized to a particular transactional-id.
-                </td>
-                <td></td>
-                <td>Convenience</td>
-            </tr>
-            <tr>
-                <td>--force</td>
-                <td> Convenience option to assume yes to all queries and do not prompt.</td>
-                <td></td>
-                <td>Convenience</td>
-            </tr>
-            <tr>
-                <td>--authorizer</td>
-                <td>(DEPRECATED: not supported in KRaft) Fully qualified class name of the authorizer.</td>
-                <td>kafka.security.authorizer.AclAuthorizer</td>
-                <td>Configuration</td>
-            </tr>
-            <tr>
-                <td>--authorizer-properties</td>
-                <td>(DEPRECATED: not supported in KRaft) key=val pairs that will be passed to authorizer for initialization. For the default authorizer in ZK clsuters, the example values are: zookeeper.connect=localhost:2181</td>
-                <td></td>
-                <td>Configuration</td>
-            </tr>
-            <tr>
-                <td>--zk-tls-config-file</td>
-                <td>(DEPRECATED: not supported in KRaft) Identifies the file where ZooKeeper client TLS connectivity properties for the authorizer are defined.
-                    Any properties other than the following (with or without an "authorizer." prefix) are ignored:
-                    zookeeper.clientCnxnSocket, zookeeper.ssl.cipher.suites, zookeeper.ssl.client.enable,
-                    zookeeper.ssl.crl.enable, zookeeper.ssl.enabled.protocols, zookeeper.ssl.endpoint.identification.algorithm,
-                    zookeeper.ssl.keystore.location, zookeeper.ssl.keystore.password, zookeeper.ssl.keystore.type,
-                    zookeeper.ssl.ocsp.enable, zookeeper.ssl.protocol, zookeeper.ssl.truststore.location,
-                    zookeeper.ssl.truststore.password, zookeeper.ssl.truststore.type
-                </td>
-                <td></td>
-                <td>Configuration</td>
-            </tr>
-            </tbody></table>
+        <p>..........</p>
 
         <h4 class="anchor-heading"><a id="security_authz_examples" class="anchor-link"></a><a href="#security_authz_examples">Examples</a></h4>
         <ul>
@@ -6129,587 +5692,7 @@ bin/kafka-acls.sh --bootstrap-server localhost:9092 --command-config /tmp/adminc
         </ul>
         <h5 class="anchor-heading"><a id="operations_resources_and_protocols" class="anchor-link"></a><a href="#operations_resources_and_protocols">Operations and Resources on Protocols</a></h5>
         <p>In the below table we'll list the valid operations on resources that are executed by the Kafka API protocols.</p>
-        <table class="data-table">
-            <thead>
-            <tr>
-                <th>Protocol (API key)</th>
-                <th>Operation</th>
-                <th>Resource</th>
-                <th>Note</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>PRODUCE (0)</td>
-                <td>Write</td>
-                <td>TransactionalId</td>
-                <td>An transactional producer which has its transactional.id set requires this privilege.</td>
-            </tr>
-            <tr>
-                <td>PRODUCE (0)</td>
-                <td>IdempotentWrite</td>
-                <td>Cluster</td>
-                <td>An idempotent produce action requires this privilege.</td>
-            </tr>
-            <tr>
-                <td>PRODUCE (0)</td>
-                <td>Write</td>
-                <td>Topic</td>
-                <td>This applies to a normal produce action.</td>
-            </tr>
-            <tr>
-                <td>FETCH (1)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td>A follower must have ClusterAction on the Cluster resource in order to fetch partition data.</td>
-            </tr>
-            <tr>
-                <td>FETCH (1)</td>
-                <td>Read</td>
-                <td>Topic</td>
-                <td>Regular Kafka consumers need READ permission on each partition they are fetching.</td>
-            </tr>
-            <tr>
-                <td>LIST_OFFSETS (2)</td>
-                <td>Describe</td>
-                <td>Topic</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>METADATA (3)</td>
-                <td>Describe</td>
-                <td>Topic</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>METADATA (3)</td>
-                <td>Create</td>
-                <td>Cluster</td>
-                <td>If topic auto-creation is enabled, then the broker-side API will check for the existence of a Cluster
-                    level privilege. If it's found then it'll allow creating the topic, otherwise it'll iterate through the
-                    Topic level privileges (see the next one).</td>
-            </tr>
-            <tr>
-                <td>METADATA (3)</td>
-                <td>Create</td>
-                <td>Topic</td>
-                <td>This authorizes auto topic creation if enabled but the given user doesn't have a cluster level
-                    permission (above).</td>
-            </tr>
-            <tr>
-                <td>LEADER_AND_ISR (4)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>STOP_REPLICA (5)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>UPDATE_METADATA (6)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>CONTROLLED_SHUTDOWN (7)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>OFFSET_COMMIT (8)</td>
-                <td>Read</td>
-                <td>Group</td>
-                <td>An offset can only be committed if it's authorized to the given group and the topic too (see below).
-                    Group access is checked first, then Topic access.</td>
-            </tr>
-            <tr>
-                <td>OFFSET_COMMIT (8)</td>
-                <td>Read</td>
-                <td>Topic</td>
-                <td>Since offset commit is part of the consuming process, it needs privileges for the read action.</td>
-            </tr>
-            <tr>
-                <td>OFFSET_FETCH (9)</td>
-                <td>Describe</td>
-                <td>Group</td>
-                <td>Similarly to OFFSET_COMMIT, the application must have privileges on group and topic level too to be able
-                    to fetch. However in this case it requires describe access instead of read. Group access is checked first,
-                    then Topic access.</td>
-            </tr>
-            <tr>
-                <td>OFFSET_FETCH (9)</td>
-                <td>Describe</td>
-                <td>Topic</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>FIND_COORDINATOR (10)</td>
-                <td>Describe</td>
-                <td>Group</td>
-                <td>The FIND_COORDINATOR request can be of "Group" type in which case it is looking for consumergroup
-                    coordinators. This privilege would represent the Group mode.</td>
-            </tr>
-            <tr>
-                <td>FIND_COORDINATOR (10)</td>
-                <td>Describe</td>
-                <td>TransactionalId</td>
-                <td>This applies only on transactional producers and checked when a producer tries to find the transaction
-                    coordinator.</td>
-            </tr>
-            <tr>
-                <td>JOIN_GROUP (11)</td>
-                <td>Read</td>
-                <td>Group</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>HEARTBEAT (12)</td>
-                <td>Read</td>
-                <td>Group</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>LEAVE_GROUP (13)</td>
-                <td>Read</td>
-                <td>Group</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>SYNC_GROUP (14)</td>
-                <td>Read</td>
-                <td>Group</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>DESCRIBE_GROUPS (15)</td>
-                <td>Describe</td>
-                <td>Group</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>LIST_GROUPS (16)</td>
-                <td>Describe</td>
-                <td>Cluster</td>
-                <td>When the broker checks to authorize a list_groups request it first checks for this cluster
-                    level authorization. If none found then it proceeds to check the groups individually. This operation
-                    doesn't return CLUSTER_AUTHORIZATION_FAILED.</td>
-            </tr>
-            <tr>
-                <td>LIST_GROUPS (16)</td>
-                <td>Describe</td>
-                <td>Group</td>
-                <td>If none of the groups are authorized, then just an empty response will be sent back instead
-                    of an error. This operation doesn't return CLUSTER_AUTHORIZATION_FAILED. This is applicable from the
-                    2.1 release.</td>
-            </tr>
-            <tr>
-                <td>SASL_HANDSHAKE (17)</td>
-                <td></td>
-                <td></td>
-                <td>The SASL handshake is part of the authentication process and therefore it's not possible to
-                    apply any kind of authorization here.</td>
-            </tr>
-            <tr>
-                <td>API_VERSIONS (18)</td>
-                <td></td>
-                <td></td>
-                <td>The API_VERSIONS request is part of the Kafka protocol handshake and happens on connection
-                    and before any authentication. Therefore it's not possible to control this with authorization.</td>
-            </tr>
-            <tr>
-                <td>CREATE_TOPICS (19)</td>
-                <td>Create</td>
-                <td>Cluster</td>
-                <td>If there is no cluster level authorization then it won't return CLUSTER_AUTHORIZATION_FAILED but
-                    fall back to use topic level, which is just below. That'll throw error if there is a problem.</td>
-            </tr>
-            <tr>
-                <td>CREATE_TOPICS (19)</td>
-                <td>Create</td>
-                <td>Topic</td>
-                <td>This is applicable from the 2.0 release.</td>
-            </tr>
-            <tr>
-                <td>DELETE_TOPICS (20)</td>
-                <td>Delete</td>
-                <td>Topic</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>DELETE_RECORDS (21)</td>
-                <td>Delete</td>
-                <td>Topic</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>INIT_PRODUCER_ID (22)</td>
-                <td>Write</td>
-                <td>TransactionalId</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>INIT_PRODUCER_ID (22)</td>
-                <td>IdempotentWrite</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>OFFSET_FOR_LEADER_EPOCH (23)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td>If there is no cluster level privilege for this operation, then it'll check for topic level one.</td>
-            </tr>
-            <tr>
-                <td>OFFSET_FOR_LEADER_EPOCH (23)</td>
-                <td>Describe</td>
-                <td>Topic</td>
-                <td>This is applicable from the 2.1 release.</td>
-            </tr>
-            <tr>
-                <td>ADD_PARTITIONS_TO_TXN (24)</td>
-                <td>Write</td>
-                <td>TransactionalId</td>
-                <td>This API is only applicable to transactional requests. It first checks for the Write action on the
-                    TransactionalId resource, then it checks the Topic in subject (below).</td>
-            </tr>
-            <tr>
-                <td>ADD_PARTITIONS_TO_TXN (24)</td>
-                <td>Write</td>
-                <td>Topic</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ADD_OFFSETS_TO_TXN (25)</td>
-                <td>Write</td>
-                <td>TransactionalId</td>
-                <td>Similarly to ADD_PARTITIONS_TO_TXN this is only applicable to transactional request. It first checks
-                    for Write action on the TransactionalId resource, then it checks whether it can Read on the given group
-                    (below).</td>
-            </tr>
-            <tr>
-                <td>ADD_OFFSETS_TO_TXN (25)</td>
-                <td>Read</td>
-                <td>Group</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>END_TXN (26)</td>
-                <td>Write</td>
-                <td>TransactionalId</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>WRITE_TXN_MARKERS (27)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>TXN_OFFSET_COMMIT (28)</td>
-                <td>Write</td>
-                <td>TransactionalId</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>TXN_OFFSET_COMMIT (28)</td>
-                <td>Read</td>
-                <td>Group</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>TXN_OFFSET_COMMIT (28)</td>
-                <td>Read</td>
-                <td>Topic</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>DESCRIBE_ACLS (29)</td>
-                <td>Describe</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>CREATE_ACLS (30)</td>
-                <td>Alter</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>DELETE_ACLS (31)</td>
-                <td>Alter</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>DESCRIBE_CONFIGS (32)</td>
-                <td>DescribeConfigs</td>
-                <td>Cluster</td>
-                <td>If broker configs are requested, then the broker will check cluster level privileges.</td>
-            </tr>
-            <tr>
-                <td>DESCRIBE_CONFIGS (32)</td>
-                <td>DescribeConfigs</td>
-                <td>Topic</td>
-                <td>If topic configs are requested, then the broker will check topic level privileges.</td>
-            </tr>
-            <tr>
-                <td>ALTER_CONFIGS (33)</td>
-                <td>AlterConfigs</td>
-                <td>Cluster</td>
-                <td>If broker configs are altered, then the broker will check cluster level privileges.</td>
-            </tr>
-            <tr>
-                <td>ALTER_CONFIGS (33)</td>
-                <td>AlterConfigs</td>
-                <td>Topic</td>
-                <td>If topic configs are altered, then the broker will check topic level privileges.</td>
-            </tr>
-            <tr>
-                <td>ALTER_REPLICA_LOG_DIRS (34)</td>
-                <td>Alter</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>DESCRIBE_LOG_DIRS (35)</td>
-                <td>Describe</td>
-                <td>Cluster</td>
-                <td>An empty response will be returned on authorization failure.</td>
-            </tr>
-            <tr>
-                <td>SASL_AUTHENTICATE (36)</td>
-                <td></td>
-                <td></td>
-                <td>SASL_AUTHENTICATE is part of the authentication process and therefore it's not possible to
-                    apply any kind of authorization here.</td>
-            </tr>
-            <tr>
-                <td>CREATE_PARTITIONS (37)</td>
-                <td>Alter</td>
-                <td>Topic</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>CREATE_DELEGATION_TOKEN (38)</td>
-                <td></td>
-                <td></td>
-                <td>Creating delegation tokens has special rules, for this please see the
-                    <a id="security_delegation_token_1" href="#security_delegation_token">Authentication using Delegation Tokens</a> section.</td>
-            </tr>
-            <tr>
-                <td>CREATE_DELEGATION_TOKEN (38)</td>
-                <td>CreateTokens</td>
-                <td>User</td>
-                <td>Allows creating delegation tokens for the User resource.</td>
-            </tr>
-            <tr>
-                <td>RENEW_DELEGATION_TOKEN (39)</td>
-                <td></td>
-                <td></td>
-                <td>Renewing delegation tokens has special rules, for this please see the
-                    <a id="security_delegation_token_2" href="#security_delegation_token">Authentication using Delegation Tokens</a> section.</td>
-            </tr>
-            <tr>
-                <td>EXPIRE_DELEGATION_TOKEN (40)</td>
-                <td></td>
-                <td></td>
-                <td>Expiring delegation tokens has special rules, for this please see the
-                    <a id="security_delegation_token_3" href="#security_delegation_token">Authentication using Delegation Tokens</a> section.</td>
-            </tr>
-            <tr>
-                <td>DESCRIBE_DELEGATION_TOKEN (41)</td>
-                <td>Describe</td>
-                <td>DelegationToken</td>
-                <td>Describing delegation tokens has special rules, for this please see the
-                    <a id="security_delegation_token_4" href="#security_delegation_token">Authentication using Delegation Tokens</a> section.</td>
-            </tr>
-            <tr>
-                <td>DESCRIBE_DELEGATION_TOKEN (41)</td>
-                <td>DescribeTokens</td>
-                <td>User</td>
-                <td>Allows describing delegation tokens of the User resource.</td>
-            </tr>
-            <tr>
-                <td>DELETE_GROUPS (42)</td>
-                <td>Delete</td>
-                <td>Group</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ELECT_PREFERRED_LEADERS (43)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>INCREMENTAL_ALTER_CONFIGS (44)</td>
-                <td>AlterConfigs</td>
-                <td>Cluster</td>
-                <td>If broker configs are altered, then the broker will check cluster level privileges.</td>
-            </tr>
-            <tr>
-                <td>INCREMENTAL_ALTER_CONFIGS (44)</td>
-                <td>AlterConfigs</td>
-                <td>Topic</td>
-                <td>If topic configs are altered, then the broker will check topic level privileges.</td>
-            </tr>
-            <tr>
-                <td>ALTER_PARTITION_REASSIGNMENTS (45)</td>
-                <td>Alter</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>LIST_PARTITION_REASSIGNMENTS (46)</td>
-                <td>Describe</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>OFFSET_DELETE (47)</td>
-                <td>Delete</td>
-                <td>Group</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>OFFSET_DELETE (47)</td>
-                <td>Read</td>
-                <td>Topic</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>DESCRIBE_CLIENT_QUOTAS (48)</td>
-                <td>DescribeConfigs</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ALTER_CLIENT_QUOTAS (49)</td>
-                <td>AlterConfigs</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>DESCRIBE_USER_SCRAM_CREDENTIALS (50)</td>
-                <td>Describe</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ALTER_USER_SCRAM_CREDENTIALS (51)</td>
-                <td>Alter</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>VOTE (52)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>BEGIN_QUORUM_EPOCH (53)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>END_QUORUM_EPOCH (54)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>DESCRIBE_QUORUM (55)</td>
-                <td>Describe</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ALTER_PARTITION (56)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>UPDATE_FEATURES (57)</td>
-                <td>Alter</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ENVELOPE (58)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>FETCH_SNAPSHOT (59)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>DESCRIBE_CLUSTER (60)</td>
-                <td>Describe</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>DESCRIBE_PRODUCERS (61)</td>
-                <td>Read</td>
-                <td>Topic</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>BROKER_REGISTRATION (62)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>BROKER_HEARTBEAT (63)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>UNREGISTER_BROKER (64)</td>
-                <td>Alter</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>DESCRIBE_TRANSACTIONS (65)</td>
-                <td>Describe</td>
-                <td>TransactionalId</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>LIST_TRANSACTIONS (66)</td>
-                <td>Describe</td>
-                <td>TransactionalId</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>ALLOCATE_PRODUCER_IDS (67)</td>
-                <td>ClusterAction</td>
-                <td>Cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>CONSUMER_GROUP_HEARTBEAT (68)</td>
-                <td>Read</td>
-                <td>Group</td>
-                <td></td>
-            </tr>
-            </tbody>
-        </table>
+        <p>..........</p>
 
         <h3 class="anchor-heading"><a id="security_rolling_upgrade" class="anchor-link"></a><a href="#security_rolling_upgrade">7.6 Incorporating Security Features in a Running Cluster</a></h3>
         You can secure a running cluster via one or more of the supported protocols discussed previously. This is done in phases:
@@ -7096,376 +6079,95 @@ transforms.InsertSource.static.value=test-file-source</pre>
             <h5><a href="#org.apache.kafka.connect.transforms.InsertField">org.apache.kafka.connect.transforms.InsertField</a></h5>
             Insert field(s) using attributes from the record metadata or a configured static value.<p></p>Use the concrete transformation type designed for the record key (<code>org.apache.kafka.connect.transforms.InsertField$Key</code>) or value (<code>org.apache.kafka.connect.transforms.InsertField$Value</code>).
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="offset.field"></a><a id="org.apache.kafka.connect.transforms.InsertField_offset.field" href="#org.apache.kafka.connect.transforms.InsertField_offset.field">offset.field</a></h6>
-                    <p>Field name for Kafka offset - only applicable to sink connectors.<br>Suffix with <code>!</code> to make this a required field, or <code>?</code> to keep it optional (the default).</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td>null</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>medium</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="partition.field"></a><a id="org.apache.kafka.connect.transforms.InsertField_partition.field" href="#org.apache.kafka.connect.transforms.InsertField_partition.field">partition.field</a></h6>
-                    <p>Field name for Kafka partition. Suffix with <code>!</code> to make this a required field, or <code>?</code> to keep it optional (the default).</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td>null</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>medium</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="static.field"></a><a id="org.apache.kafka.connect.transforms.InsertField_static.field" href="#org.apache.kafka.connect.transforms.InsertField_static.field">static.field</a></h6>
-                    <p>Field name for static data field. Suffix with <code>!</code> to make this a required field, or <code>?</code> to keep it optional (the default).</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td>null</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>medium</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="static.value"></a><a id="org.apache.kafka.connect.transforms.InsertField_static.value" href="#org.apache.kafka.connect.transforms.InsertField_static.value">static.value</a></h6>
-                    <p>Static field value, if field name configured.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td>null</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>medium</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="timestamp.field"></a><a id="org.apache.kafka.connect.transforms.InsertField_timestamp.field" href="#org.apache.kafka.connect.transforms.InsertField_timestamp.field">timestamp.field</a></h6>
-                    <p>Field name for record timestamp. Suffix with <code>!</code> to make this a required field, or <code>?</code> to keep it optional (the default).</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td>null</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>medium</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="topic.field"></a><a id="org.apache.kafka.connect.transforms.InsertField_topic.field" href="#org.apache.kafka.connect.transforms.InsertField_topic.field">topic.field</a></h6>
-                    <p>Field name for Kafka topic. Suffix with <code>!</code> to make this a required field, or <code>?</code> to keep it optional (the default).</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td>null</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>medium</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
+            <p>......</p>
+
 
         </div>
         <div id="org.apache.kafka.connect.transforms.ReplaceField">
             <h5><a href="#org.apache.kafka.connect.transforms.ReplaceField">org.apache.kafka.connect.transforms.ReplaceField</a></h5>
             Filter or rename fields.<p></p>Use the concrete transformation type designed for the record key (<code>org.apache.kafka.connect.transforms.ReplaceField$Key</code>) or value (<code>org.apache.kafka.connect.transforms.ReplaceField$Value</code>).
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="exclude"></a><a id="org.apache.kafka.connect.transforms.ReplaceField_exclude" href="#org.apache.kafka.connect.transforms.ReplaceField_exclude">exclude</a></h6>
-                    <p>Fields to exclude. This takes precedence over the fields to include.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>list</td></tr>
-                    <tr><th>Default:</th><td>""</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>medium</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="include"></a><a id="org.apache.kafka.connect.transforms.ReplaceField_include" href="#org.apache.kafka.connect.transforms.ReplaceField_include">include</a></h6>
-                    <p>Fields to include. If specified, only these fields will be used.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>list</td></tr>
-                    <tr><th>Default:</th><td>""</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>medium</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="renames"></a><a id="org.apache.kafka.connect.transforms.ReplaceField_renames" href="#org.apache.kafka.connect.transforms.ReplaceField_renames">renames</a></h6>
-                    <p>Field rename mappings.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>list</td></tr>
-                    <tr><th>Default:</th><td>""</td></tr>
-                    <tr><th>Valid Values:</th><td>list of colon-delimited pairs, e.g. <code>foo:bar,abc:xyz</code></td></tr>
-                    <tr><th>Importance:</th><td>medium</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="blacklist"></a><a id="org.apache.kafka.connect.transforms.ReplaceField_blacklist" href="#org.apache.kafka.connect.transforms.ReplaceField_blacklist">blacklist</a></h6>
-                    <p>Deprecated. Use exclude instead.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>list</td></tr>
-                    <tr><th>Default:</th><td>null</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>low</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="whitelist"></a><a id="org.apache.kafka.connect.transforms.ReplaceField_whitelist" href="#org.apache.kafka.connect.transforms.ReplaceField_whitelist">whitelist</a></h6>
-                    <p>Deprecated. Use include instead.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>list</td></tr>
-                    <tr><th>Default:</th><td>null</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>low</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
+
+            <p>......</p>
 
         </div>
         <div id="org.apache.kafka.connect.transforms.MaskField">
             <h5><a href="#org.apache.kafka.connect.transforms.MaskField">org.apache.kafka.connect.transforms.MaskField</a></h5>
             Mask specified fields with a valid null value for the field type (i.e. 0, false, empty string, and so on).<p></p>For numeric and string fields, an optional replacement value can be specified that is converted to the correct type.<p></p>Use the concrete transformation type designed for the record key (<code>org.apache.kafka.connect.transforms.MaskField$Key</code>) or value (<code>org.apache.kafka.connect.transforms.MaskField$Value</code>).
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="fields"></a><a id="org.apache.kafka.connect.transforms.MaskField_fields" href="#org.apache.kafka.connect.transforms.MaskField_fields">fields</a></h6>
-                    <p>Names of fields to mask.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>list</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td>non-empty list</td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="replacement"></a><a id="org.apache.kafka.connect.transforms.MaskField_replacement" href="#org.apache.kafka.connect.transforms.MaskField_replacement">replacement</a></h6>
-                    <p>Custom value replacement, that will be applied to all 'fields' values (numeric or non-empty string values only).</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td>null</td></tr>
-                    <tr><th>Valid Values:</th><td>non-empty string</td></tr>
-                    <tr><th>Importance:</th><td>low</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
+
+            <p>......</p>
 
         </div>
         <div id="org.apache.kafka.connect.transforms.ValueToKey">
             <h5><a href="#org.apache.kafka.connect.transforms.ValueToKey">org.apache.kafka.connect.transforms.ValueToKey</a></h5>
             Replace the record key with a new key formed from a subset of fields in the record value.
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="fields"></a><a id="org.apache.kafka.connect.transforms.ValueToKey_fields" href="#org.apache.kafka.connect.transforms.ValueToKey_fields">fields</a></h6>
-                    <p>Field names on the record value to extract as the record key.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>list</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td>non-empty list</td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
+
+            <p>......</p>
 
         </div>
         <div id="org.apache.kafka.connect.transforms.HoistField">
             <h5><a href="#org.apache.kafka.connect.transforms.HoistField">org.apache.kafka.connect.transforms.HoistField</a></h5>
             Wrap data using the specified field name in a Struct when schema present, or a Map in the case of schemaless data.<p></p>Use the concrete transformation type designed for the record key (<code>org.apache.kafka.connect.transforms.HoistField$Key</code>) or value (<code>org.apache.kafka.connect.transforms.HoistField$Value</code>).
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="field"></a><a id="org.apache.kafka.connect.transforms.HoistField_field" href="#org.apache.kafka.connect.transforms.HoistField_field">field</a></h6>
-                    <p>Field name for the single field that will be created in the resulting Struct or Map.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>medium</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
+
+            <p>......</p>
 
         </div>
         <div id="org.apache.kafka.connect.transforms.ExtractField">
             <h5><a href="#org.apache.kafka.connect.transforms.ExtractField">org.apache.kafka.connect.transforms.ExtractField</a></h5>
             Extract the specified field from a Struct when schema present, or a Map in the case of schemaless data. Any null values are passed through unmodified.<p></p>Use the concrete transformation type designed for the record key (<code>org.apache.kafka.connect.transforms.ExtractField$Key</code>) or value (<code>org.apache.kafka.connect.transforms.ExtractField$Value</code>).
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="field"></a><a id="org.apache.kafka.connect.transforms.ExtractField_field" href="#org.apache.kafka.connect.transforms.ExtractField_field">field</a></h6>
-                    <p>Field name to extract.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>medium</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
+
+            <p>......</p>
 
         </div>
         <div id="org.apache.kafka.connect.transforms.SetSchemaMetadata">
             <h5><a href="#org.apache.kafka.connect.transforms.SetSchemaMetadata">org.apache.kafka.connect.transforms.SetSchemaMetadata</a></h5>
             Set the schema name, version or both on the record's key (<code>org.apache.kafka.connect.transforms.SetSchemaMetadata$Key</code>) or value (<code>org.apache.kafka.connect.transforms.SetSchemaMetadata$Value</code>) schema.
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="schema.name"></a><a id="org.apache.kafka.connect.transforms.SetSchemaMetadata_schema.name" href="#org.apache.kafka.connect.transforms.SetSchemaMetadata_schema.name">schema.name</a></h6>
-                    <p>Schema name to set.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td>null</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="schema.version"></a><a id="org.apache.kafka.connect.transforms.SetSchemaMetadata_schema.version" href="#org.apache.kafka.connect.transforms.SetSchemaMetadata_schema.version">schema.version</a></h6>
-                    <p>Schema version to set.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>int</td></tr>
-                    <tr><th>Default:</th><td>null</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
 
+            <p>......</p>
         </div>
         <div id="org.apache.kafka.connect.transforms.TimestampRouter">
             <h5><a href="#org.apache.kafka.connect.transforms.TimestampRouter">org.apache.kafka.connect.transforms.TimestampRouter</a></h5>
             Update the record's topic field as a function of the original topic value and the record timestamp.<p></p>This is mainly useful for sink connectors, since the topic field is often used to determine the equivalent entity name in the destination system(e.g. database table or search index name).
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="timestamp.format"></a><a id="org.apache.kafka.connect.transforms.TimestampRouter_timestamp.format" href="#org.apache.kafka.connect.transforms.TimestampRouter_timestamp.format">timestamp.format</a></h6>
-                    <p>Format string for the timestamp that is compatible with <code>java.text.SimpleDateFormat</code>.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td>yyyyMMdd</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="topic.format"></a><a id="org.apache.kafka.connect.transforms.TimestampRouter_topic.format" href="#org.apache.kafka.connect.transforms.TimestampRouter_topic.format">topic.format</a></h6>
-                    <p>Format string which can contain <code>${topic}</code> and <code>${timestamp}</code> as placeholders for the topic and timestamp, respectively.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td>${topic}-${timestamp}</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
+
+            <p>......</p>
 
         </div>
         <div id="org.apache.kafka.connect.transforms.RegexRouter">
             <h5><a href="#org.apache.kafka.connect.transforms.RegexRouter">org.apache.kafka.connect.transforms.RegexRouter</a></h5>
             Update the record topic using the configured regular expression and replacement string.<p></p>Under the hood, the regex is compiled to a <code>java.util.regex.Pattern</code>. If the pattern matches the input topic, <code>java.util.regex.Matcher#replaceFirst()</code> is used with the replacement string to obtain the new topic.
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="regex"></a><a id="org.apache.kafka.connect.transforms.RegexRouter_regex" href="#org.apache.kafka.connect.transforms.RegexRouter_regex">regex</a></h6>
-                    <p>Regular expression to use for matching.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td>valid regex</td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="replacement"></a><a id="org.apache.kafka.connect.transforms.RegexRouter_replacement" href="#org.apache.kafka.connect.transforms.RegexRouter_replacement">replacement</a></h6>
-                    <p>Replacement string.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
+
+            <p>......</p>
 
         </div>
         <div id="org.apache.kafka.connect.transforms.Flatten">
             <h5><a href="#org.apache.kafka.connect.transforms.Flatten">org.apache.kafka.connect.transforms.Flatten</a></h5>
             Flatten a nested data structure, generating names for each field by concatenating the field names at each level with a configurable delimiter character. Applies to Struct when schema present, or a Map in the case of schemaless data. Array fields and their contents are not modified. The default delimiter is '.'.<p></p>Use the concrete transformation type designed for the record key (<code>org.apache.kafka.connect.transforms.Flatten$Key</code>) or value (<code>org.apache.kafka.connect.transforms.Flatten$Value</code>).
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="delimiter"></a><a id="org.apache.kafka.connect.transforms.Flatten_delimiter" href="#org.apache.kafka.connect.transforms.Flatten_delimiter">delimiter</a></h6>
-                    <p>Delimiter to insert between field names from the input record when generating field names for the output record</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td>.</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>medium</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
+
+            <p>......</p>
 
         </div>
         <div id="org.apache.kafka.connect.transforms.Cast">
             <h5><a href="#org.apache.kafka.connect.transforms.Cast">org.apache.kafka.connect.transforms.Cast</a></h5>
             Cast fields or the entire key or value to a specific type, e.g. to force an integer field to a smaller width. Cast from integers, floats, boolean and string to any other type, and cast binary to string (base64 encoded).<p></p>Use the concrete transformation type designed for the record key (<code>org.apache.kafka.connect.transforms.Cast$Key</code>) or value (<code>org.apache.kafka.connect.transforms.Cast$Value</code>).
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="spec"></a><a id="org.apache.kafka.connect.transforms.Cast_spec" href="#org.apache.kafka.connect.transforms.Cast_spec">spec</a></h6>
-                    <p>List of fields and the type to cast them to of the form field1:type,field2:type to cast fields of Maps or Structs. A single type to cast the entire value. Valid types are int8, int16, int32, int64, float32, float64, boolean, and string. Note that binary fields can only be cast to string.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>list</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td>list of colon-delimited pairs, e.g. <code>foo:bar,abc:xyz</code></td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
+
+            <p>......</p>
 
         </div>
         <div id="org.apache.kafka.connect.transforms.TimestampConverter">
             <h5><a href="#org.apache.kafka.connect.transforms.TimestampConverter">org.apache.kafka.connect.transforms.TimestampConverter</a></h5>
             Convert timestamps between different formats such as Unix epoch, strings, and Connect Date/Timestamp types.Applies to individual fields or to the entire value.<p></p>Use the concrete transformation type designed for the record key (<code>org.apache.kafka.connect.transforms.TimestampConverter$Key</code>) or value (<code>org.apache.kafka.connect.transforms.TimestampConverter$Value</code>).
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="target.type"></a><a id="org.apache.kafka.connect.transforms.TimestampConverter_target.type" href="#org.apache.kafka.connect.transforms.TimestampConverter_target.type">target.type</a></h6>
-                    <p>The desired timestamp representation: string, unix, Date, Time, or Timestamp</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td>[string, unix, Date, Time, Timestamp]</td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="field"></a><a id="org.apache.kafka.connect.transforms.TimestampConverter_field" href="#org.apache.kafka.connect.transforms.TimestampConverter_field">field</a></h6>
-                    <p>The field containing the timestamp, or empty if the entire value is a timestamp</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td>""</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="format"></a><a id="org.apache.kafka.connect.transforms.TimestampConverter_format" href="#org.apache.kafka.connect.transforms.TimestampConverter_format">format</a></h6>
-                    <p>A SimpleDateFormat-compatible format for the timestamp. Used to generate the output when type=string or used to parse the input if the input is a string.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td>""</td></tr>
-                    <tr><th>Valid Values:</th><td></td></tr>
-                    <tr><th>Importance:</th><td>medium</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="unix.precision"></a><a id="org.apache.kafka.connect.transforms.TimestampConverter_unix.precision" href="#org.apache.kafka.connect.transforms.TimestampConverter_unix.precision">unix.precision</a></h6>
-                    <p>The desired Unix precision for the timestamp: seconds, milliseconds, microseconds, or nanoseconds. Used to generate the output when type=unix or used to parse the input if the input is a Long.Note: This SMT will cause precision loss during conversions from, and to, values with sub-millisecond components.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td>milliseconds</td></tr>
-                    <tr><th>Valid Values:</th><td>[nanoseconds, microseconds, milliseconds, seconds]</td></tr>
-                    <tr><th>Importance:</th><td>low</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
+
+            <p>......</p>
 
         </div>
         <div id="org.apache.kafka.connect.transforms.Filter">
@@ -7480,84 +6182,23 @@ transforms.InsertSource.static.value=test-file-source</pre>
             <h5><a href="#org.apache.kafka.connect.transforms.InsertHeader">org.apache.kafka.connect.transforms.InsertHeader</a></h5>
             Add a header to each record.
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="header"></a><a id="org.apache.kafka.connect.transforms.InsertHeader_header" href="#org.apache.kafka.connect.transforms.InsertHeader_header">header</a></h6>
-                    <p>The name of the header.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td>non-null string</td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="value.literal"></a><a id="org.apache.kafka.connect.transforms.InsertHeader_value.literal" href="#org.apache.kafka.connect.transforms.InsertHeader_value.literal">value.literal</a></h6>
-                    <p>The literal value that is to be set as the header value on all records.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td>non-null string</td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
+
+            <p>......</p>
 
         </div>
         <div id="org.apache.kafka.connect.transforms.DropHeaders">
             <h5><a href="#org.apache.kafka.connect.transforms.DropHeaders">org.apache.kafka.connect.transforms.DropHeaders</a></h5>
             Removes one or more headers from each record.
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="headers"></a><a id="org.apache.kafka.connect.transforms.DropHeaders_headers" href="#org.apache.kafka.connect.transforms.DropHeaders_headers">headers</a></h6>
-                    <p>The name of the headers to be removed.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>list</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td>non-empty list</td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
 
+            <p>......</p>
         </div>
         <div id="org.apache.kafka.connect.transforms.HeaderFrom">
             <h5><a href="#org.apache.kafka.connect.transforms.HeaderFrom">org.apache.kafka.connect.transforms.HeaderFrom</a></h5>
             Moves or copies fields in the key/value of a record into that record's headers. Corresponding elements of <code>fields</code> and <code>headers</code> together identify a field and the header it should be moved or copied to. Use the concrete transformation type designed for the record key (<code>org.apache.kafka.connect.transforms.HeaderFrom$Key</code>) or value (<code>org.apache.kafka.connect.transforms.HeaderFrom$Value</code>).
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="fields"></a><a id="org.apache.kafka.connect.transforms.HeaderFrom_fields" href="#org.apache.kafka.connect.transforms.HeaderFrom_fields">fields</a></h6>
-                    <p>Field names in the record whose values are to be copied or moved to headers.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>list</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td>non-empty list</td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="headers"></a><a id="org.apache.kafka.connect.transforms.HeaderFrom_headers" href="#org.apache.kafka.connect.transforms.HeaderFrom_headers">headers</a></h6>
-                    <p>Header names, in the same order as the field names listed in the fields configuration property.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>list</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td>non-empty list</td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-                <li>
-                    <h6><a id="operation"></a><a id="org.apache.kafka.connect.transforms.HeaderFrom_operation" href="#org.apache.kafka.connect.transforms.HeaderFrom_operation">operation</a></h6>
-                    <p>Either <code>move</code> if the fields are to be moved to the headers (removed from the key/value), or <code>copy</code> if the fields are to be copied to the headers (retained in the key/value).</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td>[move, copy]</td></tr>
-                    <tr><th>Importance:</th><td>high</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
+
+            <p>......</p>
 
         </div>
 
@@ -7625,18 +6266,8 @@ predicates.IsBar.pattern=bar</pre>
             <h5><a href="#org.apache.kafka.connect.transforms.predicates.HasHeaderKey">org.apache.kafka.connect.transforms.predicates.HasHeaderKey</a></h5>
             A predicate which is true for records with at least one header with the configured name.
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="name"></a><a id="org.apache.kafka.connect.transforms.predicates.HasHeaderKey_name" href="#org.apache.kafka.connect.transforms.predicates.HasHeaderKey_name">name</a></h6>
-                    <p>The header name.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td>non-empty string</td></tr>
-                    <tr><th>Importance:</th><td>medium</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
+
+            <p>......</p>
 
         </div>
         <div id="org.apache.kafka.connect.transforms.predicates.RecordIsTombstone">
@@ -7651,18 +6282,8 @@ predicates.IsBar.pattern=bar</pre>
             <h5><a href="#org.apache.kafka.connect.transforms.predicates.TopicNameMatches">org.apache.kafka.connect.transforms.predicates.TopicNameMatches</a></h5>
             A predicate which is true for records with a topic name that matches the configured regular expression.
             <p></p>
-            <ul class="config-list">
-                <li>
-                    <h6><a id="pattern"></a><a id="org.apache.kafka.connect.transforms.predicates.TopicNameMatches_pattern" href="#org.apache.kafka.connect.transforms.predicates.TopicNameMatches_pattern">pattern</a></h6>
-                    <p>A Java regular expression for matching against the name of a record's topic.</p>
-                    <table><tbody>
-                    <tr><th>Type:</th><td>string</td></tr>
-                    <tr><th>Default:</th><td></td></tr>
-                    <tr><th>Valid Values:</th><td>non-empty string, valid regex</td></tr>
-                    <tr><th>Importance:</th><td>medium</td></tr>
-                    </tbody></table>
-                </li>
-            </ul>
+
+            <p>......</p>
 
         </div>
 
@@ -7867,93 +6488,11 @@ errors.tolerance=all</pre>
 
         <p>With exactly-once source support enabled, the principal for each Connect worker will require the following ACLs:</p>
 
-        <table class="data-table">
-            <thead>
-            <tr>
-                <th>Operation</th>
-                <th>Resource Type</th>
-                <th>Resource Name</th>
-                <th>Note</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Write</td>
-                <td>TransactionalId</td>
-                <td><code>connect-cluster-${groupId}</code>, where <code>${groupId}</code> is the <code>group.id</code> of the cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Describe</td>
-                <td>TransactionalId</td>
-                <td><code>connect-cluster-${groupId}</code>, where <code>${groupId}</code> is the <code>group.id</code> of the cluster</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>IdempotentWrite</td>
-                <td>Cluster</td>
-                <td>ID of the Kafka cluster that hosts the worker's config topic</td>
-                <td>The IdempotentWrite ACL has been deprecated as of 2.8 and will only be necessary for Connect clusters running on pre-2.8 Kafka clusters</td>
-            </tr>
-            </tbody>
-        </table>
+        <p>......</p>
 
         <p>And the principal for each individual connector will require the following ACLs:</p>
 
-        <table class="data-table">
-            <thead>
-            <tr>
-                <th>Operation</th>
-                <th>Resource Type</th>
-                <th>Resource Name</th>
-                <th>Note</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Write</td>
-                <td>TransactionalId</td>
-                <td><code>${groupId}-${connector}-${taskId}</code>, for each task that the connector will create, where <code>${groupId}</code> is the <code>group.id</code> of the Connect cluster, <code>${connector}</code> is the name of the connector, and <code>${taskId}</code> is the ID of the task (starting from zero)</td>
-                <td>A wildcard prefix of <code>${groupId}-${connector}*</code> can be used for convenience if there is no risk of conflict with other transactional IDs or if conflicts are acceptable to the user.</td>
-            </tr>
-            <tr>
-                <td>Describe</td>
-                <td>TransactionalId</td>
-                <td><code>${groupId}-${connector}-${taskId}</code>, for each task that the connector will create, where <code>${groupId}</code> is the <code>group.id</code> of the Connect cluster, <code>${connector}</code> is the name of the connector, and <code>${taskId}</code> is the ID of the task (starting from zero)</td>
-                <td>A wildcard prefix of <code>${groupId}-${connector}*</code> can be used for convenience if there is no risk of conflict with other transactional IDs or if conflicts are acceptable to the user.</td>
-            </tr>
-            <tr>
-                <td>Write</td>
-                <td>Topic</td>
-                <td>Offsets topic used by the connector, which is either the value of the <code>offsets.storage.topic</code> property in the connector’s configuration if provided, or the value of the <code>offsets.storage.topic</code> property in the worker’s configuration if not.</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Read</td>
-                <td>Topic</td>
-                <td>Offsets topic used by the connector, which is either the value of the <code>offsets.storage.topic</code> property in the connector’s configuration if provided, or the value of the <code>offsets.storage.topic</code> property in the worker’s configuration if not.</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Describe</td>
-                <td>Topic</td>
-                <td>Offsets topic used by the connector, which is either the value of the <code>offsets.storage.topic</code> property in the connector’s configuration if provided, or the value of the <code>offsets.storage.topic</code> property in the worker’s configuration if not.</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Create</td>
-                <td>Topic</td>
-                <td>Offsets topic used by the connector, which is either the value of the <code>offsets.storage.topic</code> property in the connector’s configuration if provided, or the value of the <code>offsets.storage.topic</code> property in the worker’s configuration if not.</td>
-                <td>Only necessary if the offsets topic for the connector does not exist yet</td>
-            </tr>
-            <tr>
-                <td>IdempotentWrite</td>
-                <td>Cluster</td>
-                <td>ID of the Kafka cluster that the source connector writes to</td>
-                <td>The IdempotentWrite ACL has been deprecated as of 2.8 and will only be necessary for Connect clusters running on pre-2.8 Kafka clusters</td>
-            </tr>
-            </tbody>
-        </table>
+        <p>......</p>
 
         <h4><a id="connect_plugindiscovery" href="#connect_plugindiscovery">Plugin Discovery</a></h4>
 

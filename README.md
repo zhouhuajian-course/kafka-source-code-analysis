@@ -1,5 +1,47 @@
 # Kafka 源码分析
 
+## Broker 一条消息 如何接收并写入到磁盘
+
+```
+appendRecordsToLeader:1300, Partition (kafka.cluster)
+$anonfun$appendToLocalLog$6:1282, ReplicaManager (kafka.server)
+apply:-1, ReplicaManager$$Lambda$1494/0x00000008010e5280 (kafka.server)
+map:28, StrictOptimizedMapOps (scala.collection)
+map$:27, StrictOptimizedMapOps (scala.collection)
+map:35, HashMap (scala.collection.mutable)
+appendToLocalLog:1270, ReplicaManager (kafka.server)
+appendRecords:873, ReplicaManager (kafka.server)
+handleProduceRequest:686, KafkaApis (kafka.server)
+handle:180, KafkaApis (kafka.server)
+run:153, KafkaRequestHandler (kafka.server)
+run:833, Thread (java.lang)
+```
+
+## Broker 启动 向ZK 注册数据过程
+
+```
+core/src/main/scala/kafka/Kafka.scala
+kafka.Kafka.main
+   // 从参数获取服务器properties
+   val serverProps = getPropsFromArgs(args)
+   // 创建server对象
+   val server = buildServer(serverProps)
+   // 启动服务器server
+   try server.startup()
+      // 初始化zk客户端
+      initZkClient(time)
+          // 创建zk客户端对象
+         _zkClient = KafkaZkClient.createZkClient("Kafka server", time, config, zkClientConfig)
+         // 创建顶层路径 这个方法，会把基础的zk路径结构给创建了
+         _zkClient.createTopLevelPaths()
+   // 获取集群ID 如果没有，则创建一个集群ID 
+   // 集群ID生成方式 CoreUtils.generateUuidAsBase64()       
+   _clusterId = getOrGenerateClusterId(zkClient)
+   // 获取broker id 没有则生成， 如果配置文件有配broker id那么就是那个broker id
+   config.brokerId = getOrGenerateBrokerId(preloadedBrokerMetadataCheckpoint)
+        
+```
+
 ## 生产者 获取元数据 继续分析
 
 可以快速 断点到 下面两个位置 快速分析
