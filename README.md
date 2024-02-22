@@ -1,8 +1,328 @@
 # Kafka 源码分析
 
+
+
+## Broker 创建/删除主题 源码
+
+```
+kafka.server.KafkaApis.handle
+   业务处理 处理请求
+   // 请求 头部 的 apiKey 
+   request.header.apiKey match 
+      // 创建主题请求 
+      //    可能转发给控制器 说明创建主题由控制器负责创建
+      case ApiKeys.CREATE_TOPICS => maybeForwardToController(request, handleCreateTopicsRequest)
+         // 元数据支持 可能转发 
+         //    三个参数 请求 处理器 响应回调
+         metadataSupport.maybeForward(request, handler, responseCallback)
+            // 请求没有转发过 可以转发
+            // (转发管理器定义了，并且控制器不是活跃的，也就是不是集群控制器) 
+            // override def canForward(): Boolean = forwardingManager.isDefined && (!controller.isActive)
+            if (!request.isForwarded && canForward()) {
+               // 转发管理器 转发请求
+               forwardingManager.get.forwardRequest(request, responseCallback)          
+            // 不需要转发 自己是集群控制器 直接处理请求
+            } else {
+               // 处理器是 handleCreateTopicsRequest
+               handler(request)
+            }
+      // 删除主题请求
+      case ApiKeys.DELETE_TOPICS => maybeForwardToController(request, handleDeleteTopicsRequest)
+     
+handleCreateTopicsRequest
+   处理创建主题请求     
+```
+
+
+## Broker 接收客户端请求、处理客户端请求、响应客户端请求 源码
+
+```
+kafka.network.Processor.run
+   // 不停循环 只要还在运行
+   while (shouldRun.get()) 
+        try {
+           // setup any new connections that have been queued up
+           configureNewConnections()
+           // 处理新的响应 
+           processNewResponses()
+              // 去响应队列 拿响应 并发送响应
+              while ({currentResponse = dequeueResponse(); currentResponse != null}) 
+          poll()
+          processCompletedReceives()
+          processCompletedSends()
+          // 处理断开连接
+          processDisconnected()
+          closeExcessConnections()
+          
+kafka.server.KafkaRequestHandlerPool
+   初始化
+   // 线程池大小 num.io.threads 8 默认8个 处理请求的线程
+   private val threadPoolSize: AtomicInteger = new AtomicInteger(numThreads)
+   // 创建8个请求处理
+   for (i <- 0 until numThreads) 
+      createHandler(i)
+         // 创建Kafka请求处理器
+         runnables += new KafkaRequestHandler(id, brokerId, aggregateIdleMeter, threadPoolSize, requestChannel, apis, time)
+
+kafka.server.KafkaRequestHandler.run
+   请求处理器的run方法
+   while (!stopped)
+      // 从 requestChannle 接收 请求 (拿客户端请求)
+      val req = requestChannel.receiveRequest(300)
+         // 请求队列 poll 请求    
+         val request = requestQueue.poll(timeout, TimeUnit.MILLISECONDS)
+      req match {
+         case RequestChannel.ShutdownRequest =>
+         case callback: RequestChannel.CallbackRequest =>
+         // 如果请求是正常请求
+         case request: RequestChannel.Request =>
+            // apis处理这个请求，并把响应发到RequestChannel的响应队列
+            // KafkaApis是真正负责业务逻辑的类
+            apis.handle(request, requestLocal)
+         case RequestChannel.WakeupRequest => 
+         
+kafka.server.KafkaApis.handle
+   业务处理 处理请求
+   // 请求 头部 的 apiKey (请求有apiKey标识请求类型)
+   request.header.apiKey match 
+      // 生产请求
+      case ApiKeys.PRODUCE => handleProduceRequest(request, requestLocal)
+      // 抓取请求
+      case ApiKeys.FETCH => handleFetchRequest(request)
+      case ApiKeys.LIST_OFFSETS => handleListOffsetRequest(request)
+      // 元数据请求
+      case ApiKeys.METADATA => handleTopicMetadataRequest(request)
+      case ApiKeys.LEADER_AND_ISR => handleLeaderAndIsrRequest(request)
+      // 停止副本请求
+      case ApiKeys.STOP_REPLICA => handleStopReplicaRequest(request)
+      // 更新元数据请求
+      case ApiKeys.UPDATE_METADATA => handleUpdateMetadataRequest(request, requestLocal)
+      case ApiKeys.CONTROLLED_SHUTDOWN => handleControlledShutdownRequest(request)
+      case ApiKeys.OFFSET_COMMIT => handleOffsetCommitRequest(request, requestLocal).exceptionally(handleError)
+      case ApiKeys.OFFSET_FETCH => handleOffsetFetchRequest(request).exceptionally(handleError)
+      // 寻找协调器请求
+      case ApiKeys.FIND_COORDINATOR => handleFindCoordinatorRequest(request)
+      // 加入消费者组请求
+      case ApiKeys.JOIN_GROUP => handleJoinGroupRequest(request, requestLocal).exceptionally(handleError)
+      // 心跳请求
+      case ApiKeys.HEARTBEAT => handleHeartbeatRequest(request).exceptionally(handleError)
+      // 离开消费者组请求
+      case ApiKeys.LEAVE_GROUP => handleLeaveGroupRequest(request).exceptionally(handleError)
+      case ApiKeys.SYNC_GROUP => handleSyncGroupRequest(request, requestLocal).exceptionally(handleError)
+      case ApiKeys.DESCRIBE_GROUPS => handleDescribeGroupsRequest(request).exceptionally(handleError)
+      // 列出消费者组请求
+      case ApiKeys.LIST_GROUPS => handleListGroupsRequest(request).exceptionally(handleError)
+      case ApiKeys.SASL_HANDSHAKE => handleSaslHandshakeRequest(request)
+      // API版本请求
+      case ApiKeys.API_VERSIONS => handleApiVersionsRequest(request)
+      // 创建主题请求
+      case ApiKeys.CREATE_TOPICS => maybeForwardToController(request, handleCreateTopicsRequest)
+      // 删除主题请求
+      case ApiKeys.DELETE_TOPICS => maybeForwardToController(request, handleDeleteTopicsRequest)
+      // 删除记录请求
+      case ApiKeys.DELETE_RECORDS => handleDeleteRecordsRequest(request)
+      // 初始化生产者ID请求
+      case ApiKeys.INIT_PRODUCER_ID => handleInitProducerIdRequest(request, requestLocal)
+      case ApiKeys.OFFSET_FOR_LEADER_EPOCH => handleOffsetForLeaderEpochRequest(request)
+      case ApiKeys.ADD_PARTITIONS_TO_TXN => handleAddPartitionsToTxnRequest(request, requestLocal)
+      case ApiKeys.ADD_OFFSETS_TO_TXN => handleAddOffsetsToTxnRequest(request, requestLocal)
+      case ApiKeys.END_TXN => handleEndTxnRequest(request, requestLocal)
+      case ApiKeys.WRITE_TXN_MARKERS => handleWriteTxnMarkersRequest(request, requestLocal)
+      case ApiKeys.TXN_OFFSET_COMMIT => handleTxnOffsetCommitRequest(request, requestLocal).exceptionally(handleError)
+      case ApiKeys.DESCRIBE_ACLS => handleDescribeAcls(request)
+      case ApiKeys.CREATE_ACLS => maybeForwardToController(request, handleCreateAcls)
+      case ApiKeys.DELETE_ACLS => maybeForwardToController(request, handleDeleteAcls)
+      // 修改配置请求
+      case ApiKeys.ALTER_CONFIGS => handleAlterConfigsRequest(request)
+      // 描述配置请求
+      case ApiKeys.DESCRIBE_CONFIGS => handleDescribeConfigsRequest(request)
+      // 修改副本日志目录请求
+      case ApiKeys.ALTER_REPLICA_LOG_DIRS => handleAlterReplicaLogDirsRequest(request)
+      case ApiKeys.DESCRIBE_LOG_DIRS => handleDescribeLogDirsRequest(request)
+      case ApiKeys.SASL_AUTHENTICATE => handleSaslAuthenticateRequest(request)
+      // 创建副本请求
+      case ApiKeys.CREATE_PARTITIONS => maybeForwardToController(request, handleCreatePartitionsRequest)
+      // Create, renew and expire DelegationTokens must first validate that the connection
+      // itself is not authenticated with a delegation token before maybeForwardToController.
+      case ApiKeys.CREATE_DELEGATION_TOKEN => handleCreateTokenRequest(request)
+      case ApiKeys.RENEW_DELEGATION_TOKEN => handleRenewTokenRequest(request)
+      case ApiKeys.EXPIRE_DELEGATION_TOKEN => handleExpireTokenRequest(request)
+      case ApiKeys.DESCRIBE_DELEGATION_TOKEN => handleDescribeTokensRequest(request)
+      case ApiKeys.DELETE_GROUPS => handleDeleteGroupsRequest(request, requestLocal).exceptionally(handleError)
+      case ApiKeys.ELECT_LEADERS => maybeForwardToController(request, handleElectLeaders)
+      case ApiKeys.INCREMENTAL_ALTER_CONFIGS => handleIncrementalAlterConfigsRequest(request)
+      case ApiKeys.ALTER_PARTITION_REASSIGNMENTS => maybeForwardToController(request, handleAlterPartitionReassignmentsRequest)
+      case ApiKeys.LIST_PARTITION_REASSIGNMENTS => maybeForwardToController(request, handleListPartitionReassignmentsRequest)
+      case ApiKeys.OFFSET_DELETE => handleOffsetDeleteRequest(request, requestLocal).exceptionally(handleError)
+      case ApiKeys.DESCRIBE_CLIENT_QUOTAS => handleDescribeClientQuotasRequest(request)
+      case ApiKeys.ALTER_CLIENT_QUOTAS => maybeForwardToController(request, handleAlterClientQuotasRequest)
+      case ApiKeys.DESCRIBE_USER_SCRAM_CREDENTIALS => handleDescribeUserScramCredentialsRequest(request)
+      case ApiKeys.ALTER_USER_SCRAM_CREDENTIALS => maybeForwardToController(request, handleAlterUserScramCredentialsRequest)
+      case ApiKeys.ALTER_PARTITION => handleAlterPartitionRequest(request)
+      case ApiKeys.UPDATE_FEATURES => maybeForwardToController(request, handleUpdateFeatures)
+      case ApiKeys.ENVELOPE => handleEnvelope(request, requestLocal)
+      // 描述集群请求
+      case ApiKeys.DESCRIBE_CLUSTER => handleDescribeCluster(request)
+      // 描述生产者请求
+      case ApiKeys.DESCRIBE_PRODUCERS => handleDescribeProducersRequest(request)
+      case ApiKeys.UNREGISTER_BROKER => forwardToControllerOrFail(request)
+      // 描述事务请求
+      case ApiKeys.DESCRIBE_TRANSACTIONS => handleDescribeTransactionsRequest(request)
+      // 列出事务请求
+      case ApiKeys.LIST_TRANSACTIONS => handleListTransactionsRequest(request)
+      case ApiKeys.ALLOCATE_PRODUCER_IDS => handleAllocateProducerIdsRequest(request)
+      case ApiKeys.DESCRIBE_QUORUM => forwardToControllerOrFail(request)
+      // 消费者组心跳请求
+      case ApiKeys.CONSUMER_GROUP_HEARTBEAT => handleConsumerGroupHeartbeat(request).exceptionally(handleError)
+      case _ => throw new IllegalStateException(s"No handler for request api key ${request.header.apiKey}")
+        
+```
+
+## Broker 接收客户端请求、处理客户端请求、响应客户端请求 源码
+
+_来自网络_
+
+```
+1. Processor 接收 来自客户端 请求，但可业务逻辑无关，把请求 放到 RequestChannel.requestQueue
+2. KafkaRequestHandler 从 RequestChannel.requestQueue 读取请求，并处理请求，把响应 放到 RequestChannel.responseQueues[i]
+3. Processor 把RequestChannel.responseQueues[i] 的响应 发送给客户端
+使用 RequestChannel 的请求和响应队列，把 Processor 和 KafkaRequestHandler 关联在一起
+```
+
+## Broker 接受客户端网络连接 源码
+
+```
+kafka.Kafka.main
+   // 服务器 启动
+   try server.startup()
+      // 创建socket服务器
+      socketServer = new SocketServer(config, metrics, time, credentialProvider, apiVersionManager)
+         config.dataPlaneListeners.foreach(createDataPlaneAcceptorAndProcessors)
+            // 创建接受器 网络连接接受器
+            // 数据层面接收器 (Kafka把请求类型分类两大类，数据类请求和控制类请求，数据面、控制面，或者数据层面、控制层面)
+            val dataPlaneAcceptor = createDataPlaneAcceptor(endpoint, isPrivilegedListener, dataPlaneRequestChannel)
+               // 创建数据层面接收器
+               // 这个类是Acceptor的子类 class DataPlaneAcceptor extends Acceptor
+               new DataPlaneAcceptor(this, endPoint, config, nodeId, connectionQuotas, time, isPrivilegedListener, requestChannel, metrics, credentialProvider, logContext, memoryPool, apiVersionManager)
+            // 数据层面接收器 进行配置      
+            dataPlaneAcceptor.configure(parsedConfigs)
+               addProcessors(configs.get(KafkaConfig.NumNetworkThreadsProp).asInstanceOf[Int])
+                   // 创建处理器 num.network.threads 默认3个网络线程 
+                   // 用来从网络接收请求和发送响应到网络
+                   for (_ <- 0 until toCreate) 
+                        // 创建处理器
+                        val processor = newProcessor(socketServer.nextProcessorId(), listenerName, securityProtocol)
+                        listenerProcessors += processor
+                        // 请求channel 添加处理器
+                        requestChannel.addProcessor(processor)                     
+                        // 启动处理器
+                        processor.start()
+            // 数据层面接收器集合 放入 该接收器
+            dataPlaneAcceptors.put(endpoint, dataPlaneAcceptor)     
+               // 后续，启动接收器后，运行Acceptor类的run方法
+               kafka.network.Acceptor.run  
+                  // 注册 OP_ACCEPT 监听ACCEPT事件
+                  serverChannel.register(nioSelector, SelectionKey.OP_ACCEPT)
+                     // 如果还在运行 就不停循环
+                     while (shouldRun.get())
+                        // 接受新连接
+                        acceptNewConnections()
+                           // 准备好的连接事件
+                           val ready = nioSelector.select(500)
+                           if (ready > 0) {
+                              val keys = nioSelector.selectedKeys()
+                              val iter = keys.iterator()
+                              // 遍历每个连接事件
+                              while (iter.hasNext && shouldRun.get()) {
+                                  val key = iter.next
+                                  // 移除该连接事件，避免重复处理
+                                  iter.remove()
+                                  if (key.isAcceptable) {
+                                     accept(key).foreach { socketChannel =>
+                                         // 选一个处理器
+                                         var processor: Processor = null
+                                         // 循环分配连接事件给处理，直到分配成功
+                                         do {
+                                           processor = synchronized {
+                                             currentProcessorIndex = currentProcessorIndex % processors.length
+                                             processors(currentProcessorIndex)
+                                           }
+                                           currentProcessorIndex += 1
+                                         // 分配新连接 给 处理器 这个客户端以后的所有请求有这个 处理器 处理
+                                         } while (!assignNewConnection(socketChannel, processor, retriesLeft == 0))                                           
+                        closeThrottledConnections()                      
+```
+
+## Broker 源码
+
+_来自网络_
+
+```
+Broker
+   SocketServer Socket服务器 (Socket服务层)
+      1. 1个Acceptor线程 接受 socket连接，然后转发给N个Processor线程，Processor 1,2,..,n
+      N=num.network.threads
+      N个Processor将接收到的request存放到阻塞队列requestQueue
+      2. M个处理线程IO Thread从RequestChannel的请求阻塞队列requestQueue获取请求
+      调用kafkaApis处理不同的请求
+      M=num.io.threads
+      3. Broker共处理10种不同的request，分别为
+      RequestKeys.ProduceKey 生产
+      RequestKeys.FetchKey 抓取
+      RequestKeys.OffsetsKey 偏移
+      RequestKeys.MetadataKey 元数据
+      RequestKeys.LeaderAndIsrKey  
+      RequestKeys.StopReplicaKey 停止副本
+      RequestKeys.UpdateMetadataKey 更新元数据
+      RequestKeys.ControlledShutdownKey 控制关闭
+      RequestKeys.OffsetCommitKey 偏移提交
+      RequestKeys.OffsetFetchKey 偏移抓取
+      4. KafkaApis Kafka接口 (业务逻辑处理层)
+      通过ReplicaManager(副本管理器)、logManager(日志管理器)、OffsetManager(偏移量管理器)共同实现正常的业务逻辑
+      5. IO Thread将request处理过的response存放进RequestChannel的响应阻塞队列responseQueues[i]
+      6. Processor Thread从对应来的RequestChannel的响应阻塞队列responseQueues[i]
+      获取之前自己发送的reuqest，然后发送给客户端
+   KafkaRequestHandlerPool Kafka请求处理器池 (请求转发层)
+   Control 控制 (集群状态控制层)
+      通过ZK选举改变自身状态，集群中只有一台Broker成为leader，主要负责应对
+      topic的创建和删除、topic的分区变化、topic的分区内部的副本变化、broker的上下线
+   KafkaHealthcheck Kafka健康检查Broker (Broker健康检测层)
+      通过在ZK上注册EphemeralPath来实现
+   TopicConfigManager 主题配置管理器 (主题配置信息监控层)
+      主要响应topic的配置信息的变化
+      
+Broker共处理10中request
+   1. ProducerRequest 生产者发送消息到Kafka集群，或者消费者提交偏移量      
+   2. TopicMetadataRequest 生产者或消费者发送获取topic元数据的请求
+   3. FetchRequest 消费者或者ReplicaFetcher(副本抓取器)发送获取数据的请求
+   4. OffsetRequest 消费者发送 获取某个topic的偏移量的请求
+   5. OffsetCommitRequest 消费者发送提交偏移量到Kafka的请求(内部根据配置提交到ZK或者log，老版本偏移量存放在ZK)
+   6. OffsetFetchRequest 消费者发送获取自己提交的Kafka上的偏移量
+   7. LeaderAndIsrRequest 当某个topic的partition的leader和isr发送变化时，Controller发通知给相应的broker，比如leader挂了
+   8. StopReplicaRequest 当broker停止时或者删除某个topic的分区的replica时，Controller发送通知相应的broker停止拷贝副本的请求
+   9. UpdateMetadataRequest 当topic的元数据发生变化是，Controller发送通知给相应的Broker的请求
+   10. BrokerControlledShutdownRequest 当集群内某个borker关机的时候，Broker作为leader的controller接收到的对应的broker准备关机的请求
+```
+
 ## 消费者 提交偏移 源码分析
 
-https://segmentfault.com/a/1190000043775148
+```
+手动提交 offset 同步
+consumer.commitSync();
+   // 偏移量
+   offsets.forEach(this::updateLastSeenEpochIfNewer);
+   // 协调器 提交 偏移 同步
+   if (!coordinator.commitOffsetsSync(new HashMap<>(offsets), time.timer(timeout))) {
+   }
+   
+// 手动提交 offset 异步
+consumer.commitAsync();
+   // 偏移量
+   offsets.forEach(this::updateLastSeenEpochIfNewer);
+   // 协调器 提交 偏移 异步
+   coordinator.commitOffsetsAsync(new HashMap<>(offsets), callback);
+           
+```
 
 ## 消费者 拉取消息 源码
 

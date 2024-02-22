@@ -28,6 +28,7 @@ public class SimpleConsumer {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "Group " + UUID.randomUUID());
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
         // 创建消费者
         KafkaConsumer<Integer, String> consumer = new KafkaConsumer<Integer, String>(props);
         consumer.subscribe(Collections.singleton("Users"));
@@ -37,7 +38,10 @@ public class SimpleConsumer {
         for (ConsumerRecord<Integer, String> record : records) {
             System.out.println(record);
         }
+        // 手动提交 offset 同步 需把自动提交关闭
+        // consumer.commitSync();
+        // 手动提交 offset 异步
+        consumer.commitAsync();
         consumer.close();
-
     }
 }
