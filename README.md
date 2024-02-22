@@ -1,5 +1,187 @@
 # Kafka 源码分析
 
+## 消费者 提交偏移 源码分析
+
+https://segmentfault.com/a/1190000043775148
+
+## 消费者 拉取消息 源码
+
+```
+ConsumerRecords<Integer, String> records = consumer.poll(Duration.ofSeconds(1));
+   // 如果需要 更新分配元数据
+   updateAssignmentMetadataIfNeeded(timer, false);
+   // 拉取数据
+   final Fetch<K, V> fetch = pollForFetches(timer);
+      // 发送 Fetch
+      sendFetches();
+         for (Map.Entry<Node, FetchSessionHandler.FetchRequestData> entry : fetchRequestMap.entrySet()) {
+            // 创建抓取请求
+            final FetchRequest.Builder request = createFetchRequest(fetchTarget, data);
+            RequestFutureListener<ClientResponse> listener = new RequestFutureListener<ClientResponse>() {
+                @Override
+                // 抓取请求成功
+                public void onSuccess(ClientResponse resp) {
+                    synchronized (Fetcher.this) {
+                    。  // 处理抓取的响应 
+                        handleFetchResponse(fetchTarget, data, resp);
+                           // 获取抓取请求的响应的响应体
+                           final FetchResponse response = (FetchResponse) resp.responseBody();
+                           // 已完成的抓取
+                           CompletedFetch<K, V> completedFetch = new CompletedFetch<>();
+                          // 已完成的所有抓取 添加 这个已完成的抓取    
+                          completedFetches.add(completedFetch);
+                    }
+                }
+
+                @Override
+                // 抓取请求失败
+                public void onFailure(RuntimeException e) {
+                    synchronized (Fetcher.this) {
+                        handleFetchResponse(fetchTarget, e);
+                    }
+                }
+            };
+            // 客户端 发送 拉取数据 请求
+            final RequestFuture<ClientResponse> future = client.send(fetchTarget, request);
+            // 添加监听器 
+            future.addListener(listener);
+        }
+        // 收集fetch
+        return fetcher.collectFetch();
+            // 当 记录 剩余数量 大于0 一直处理
+            while (recordsRemaining > 0) {
+                if (nextInLineFetch == null || nextInLineFetch.isConsumed) {
+                    CompletedFetch<K, V> records = completedFetches.peek();
+                    // 记录数据为空 直接退出循环
+                    if (records == null) break;
+                    // 拉取数据
+                    completedFetches.poll();
+       
+                } else {
+                    // 拉取记录数据
+                    Fetch<K, V> nextFetch = fetchRecords(recordsRemaining);
+                    // 记录剩余数 减去 这次拉取的记录数 处理多少减去多少
+                    recordsRemaining -= nextFetch.numRecords();
+                    fetch.add(nextFetch);
+                }
+            }
+   if (!fetch.isEmpty()) {
+        if (fetch.records().isEmpty()) {
+        }
+        // 拦截器 处理数据
+        // 返回拦截器处理后的 数据 
+        return this.interceptors.onConsume(new ConsumerRecords<>(fetch.records()));
+    }
+```
+
+## 消费者 订阅主题 源码
+
+```
+consumer.subscribe(Collections.singleton("Users"));
+   // 订阅主题
+   if (this.subscriptions.subscribe(new HashSet<>(topics), listener))
+           // 注册再平衡监听器 (例如消费者组，有消费者退出，触发再平衡)
+           registerRebalanceListener(listener);
+           // 设置订阅类型
+           setSubscriptionType(SubscriptionType.AUTO_TOPICS);
+           // 修改订阅 (和以前不一样 返回true)
+           return changeSubscription(topics); 
+      // 元数据 请求更新 为 新的主题 (如果和以前不一样)
+      metadata.requestUpdateForNewTopics();
+            
+```
+
+## 消费者 创建消费者 源码
+
+```
+KafkaConsumer<Integer, String> consumer = new KafkaConsumer<Integer, String>(props);
+   // 消费者组再平衡配置
+   GroupRebalanceConfig groupRebalanceConfig = new GroupRebalanceConfig(config,
+                    GroupRebalanceConfig.ProtocolType.CONSUMER);
+   // 消费者组ID
+   this.groupId = Optional.ofNullable(groupRebalanceConfig.groupId);
+   // 客户端ID
+   this.clientId = config.getString(CommonClientConfigs.CLIENT_ID_CONFIG);
+   // 请求超时时间 默认30秒 30000 (30 seconds)
+   this.requestTimeoutMs = config.getInt(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG);
+   this.defaultApiTimeoutMs = config.getInt(ConsumerConfig.DEFAULT_API_TIMEOUT_MS_CONFIG);
+   // 拦截器列表
+   List<ConsumerInterceptor<K, V>> interceptorList = createConsumerInterceptors(config);
+   this.interceptors = new ConsumerInterceptors<>(interceptorList);
+   // key value 反序列化器
+   this.keyDeserializer = createKeyDeserializer(config, keyDeserializer);
+   this.valueDeserializer = createValueDeserializer(config, valueDeserializer);
+   // 创建订阅状态
+   this.subscriptions = createSubscriptionState(config, logContext);
+        // 自动偏移重置
+        String s = config.getString(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG).toUpperCase(Locale.ROOT);
+        // 偏移重置策略
+        OffsetResetStrategy strategy = OffsetResetStrategy.valueOf(s);
+   // 消费者 元数据
+   //    允许自动创建主题 allow.auto.create.topics         true
+   //    包括内部主题 !exclude.internal.topics      !true false
+   this.metadata = new ConsumerMetadata(config, subscriptions, logContext, clusterResourceListeners);
+   // Kafka 集群地址
+   List<InetSocketAddress> addresses = ClientUtils.parseAndValidateAddresses(config);
+   this.metadata.bootstrap(addresses);
+   // 创建消费者网络客户端
+   this.client = createConsumerNetworkClient(config,
+                       metrics,
+                       logContext,
+                       apiVersions,
+                       time,
+                       metadata,
+                       fetchMetricsManager.throttleTimeSensor(),
+                       retryBackoffMs);  
+      // 心跳间隔 heartbeat.interval.ms 3000 (3 seconds)                  
+      int heartbeatIntervalMs = config.getInt(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG);
+   // 消费者分区分配器
+   this.assignors = ConsumerPartitionAssignor.getAssignorInstances(
+           config.getList(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG),
+           config.originals(Collections.singletonMap(ConsumerConfig.CLIENT_ID_CONFIG, clientId))
+   );          
+   // 消费者协调器
+   //    自动提交 autoCommitEnabled true
+   //    自动提交间隔 autoCommitIntevalMs auto.commit.interval.ms 5000 (5 seconds)
+   this.coordinator = new ConsumerCoordinator(groupRebalanceConfig,
+                        logContext,
+                        this.client,
+                        assignors,
+                        this.metadata,
+                        this.subscriptions,
+                        metrics,
+                        CONSUMER_METRIC_GROUP_PREFIX,
+                        this.time,
+                        enableAutoCommit,
+                        config.getInt(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG),
+                        this.interceptors,
+                        config.getBoolean(ConsumerConfig.THROW_ON_FETCH_STABLE_OFFSET_UNSUPPORTED),
+                        config.getString(ConsumerConfig.CLIENT_RACK_CONFIG));  
+    // 创建抓取配置 key value 反序列化器                    
+    FetchConfig<K, V> fetchConfig = createFetchConfig(config, this.keyDeserializer, this.valueDeserializer);                                
+        // 一次抓取 最小字节数 fetch.min.bytes 1
+        this.minBytes = config.getInt(ConsumerConfig.FETCH_MIN_BYTES_CONFIG);
+        // 一次抓取 最大字节数 fetch.max.bytes 57671680 (55 mebibytes)
+        this.maxBytes = config.getInt(ConsumerConfig.FETCH_MAX_BYTES_CONFIG);
+        // 一次抓取 最大等待时间 fetch.max.wait.ms 500毫秒
+        this.maxWaitMs = config.getInt(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG);
+        // 最大分区抓取字节数 max.partition.fetch.bytes 1048576 (1 mebibyte)
+        this.fetchSize = config.getInt(ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG);
+        // 一次拉取 最大拉取记录数 max.poll.records 500
+        this.maxPollRecords = config.getInt(ConsumerConfig.MAX_POLL_RECORDS_CONFIG);
+        this.keyDeserializer = Objects.requireNonNull(keyDeserializer, "Message key deserializer provided to FetchConfig should not be null");
+        this.valueDeserializer = Objects.requireNonNull(valueDeserializer, "Message value deserializer provided to FetchConfig should not be null");
+    // 数据抓取器                    
+    this.fetcher = new Fetcher<>(
+                    logContext,
+                    this.client,
+                    this.metadata,
+                    this.subscriptions,
+                    fetchConfig,
+                    fetchMetricsManager,
+                    this.time);                                            
+```
+
 ## Broker 一条消息 如何接收并写入到磁盘
 
 ```

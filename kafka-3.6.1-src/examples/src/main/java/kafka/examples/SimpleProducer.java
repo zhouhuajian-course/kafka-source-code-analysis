@@ -14,12 +14,12 @@ public class SimpleProducer {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
 
         Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9090,localhost:9092,localhost:9093");
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9091,localhost:9092,localhost:9093");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         KafkaProducer<Integer, String> producer = new KafkaProducer<>(props);
         // 同步发送
-        ProducerRecord<Integer, String> record = new ProducerRecord<>("TestTopic", 1,"test 1");
+        ProducerRecord<Integer, String> record = new ProducerRecord<>("Users", 1,"test 1");
         RecordMetadata metadata = producer.send(record).get();
         // ProducerRecord<Integer, String> record2 = new ProducerRecord<>("TestTopic", 2,"test 2");
         // RecordMetadata metadata2 = producer.send(record2).get();
