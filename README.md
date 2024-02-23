@@ -1,7 +1,5 @@
 # Kafka 源码分析
 
-
-
 ## Broker 创建/删除主题 源码
 
 ```
@@ -302,6 +300,152 @@ Broker共处理10中request
    8. StopReplicaRequest 当broker停止时或者删除某个topic的分区的replica时，Controller发送通知相应的broker停止拷贝副本的请求
    9. UpdateMetadataRequest 当topic的元数据发生变化是，Controller发送通知给相应的Broker的请求
    10. BrokerControlledShutdownRequest 当集群内某个borker关机的时候，Broker作为leader的controller接收到的对应的broker准备关机的请求
+```
+
+## Broker ReplicaManager 副本管理 源码
+
+```
+// 处理Controller给的请求LeaderAndIsrRequest  
+kafka.server.KafkaApis.handleLeaderAndIsrRequest   
+   // 副本管理器 变成Leader或者Follower
+   val response = replicaManager.becomeLeaderOrFollower(correlationId, leaderAndIsrRequest,
+      // 控制器 Broker ID
+      val controllerId = leaderAndIsrRequest.controllerId 
+
+kafka.server.ReplicaManager.startup
+   副本管理器启动
+   // 定时任务 isr 可能缩小ISR
+   scheduler.schedule("isr-expiration", () => maybeShrinkIsr(), 0L, config.replicaLagTimeMaxMs / 2)
+       // maybeShirinkIsr 
+       // 遍历所有分区
+       allPartitions.keys.foreach { topicPartition =>
+           onlinePartition(topicPartition).foreach(_.maybeShrinkIsr())
+               // 不在同步的副本ID
+               val outOfSyncReplicaIds = getOutOfSyncReplicas(replicaLagTimeMaxMs)
+               // 提交新的isr到ZK
+               alterIsrUpdateOpt.foreach(submitAlterPartition)            
+```
+
+## Broker ReplicaManager 副本管理 源码
+
+_来自网络_
+
+```
+使用 主题 描述 时
+Replicas: 表示主题某个分区的所有副本
+ISR: in-sync replicas 处于同步状态的副本（Replicas >= ISR，因为有些Broker坏了，它对应的副本无法正常同步）
+AR: assign replicas
+
+ReplicaManager主要作用，
+   1. 负责接收Controller的Command以完成Replica的管理工作
+      Command主要有两种，LeaderAndISRCommand和StopReplicaCommand
+   2. 开启定时线程maybeShrinkIsr
+```
+
+## Broker LogManager 日志管理 源码
+
+```
+kafka.server.KafkaServer
+    override def logManager: LogManager = _logManager
+    override def startup(): Unit 
+        // 创建日志管理器
+        _logManager = LogManager(config, initialOfflineDirs, configRepository, kafkaScheduler, time, brokerTopicStats, logDirFailureChannel, config.usesTopicId)
+            // 日志清理器 清理器配置
+            val cleanerConfig = LogCleaner.cleanerConfig(config)
+                 // 日志清理器线程 logCleanerThreads 默认1
+                 // 日志清理器去重缓存大小 logCleanerDedupeBufferSize     
+                 new CleanerConfig(config.logCleanerThreads,
+                     config.logCleanerDedupeBufferSize,
+                     config.logCleanerDedupeBufferLoadFactor,
+                     config.logCleanerIoBufferSize,
+                     config.messageMaxBytes,
+                     config.logCleanerIoMaxBytesPerSecond,
+                     config.logCleanerBackoffMs,
+                     config.logCleanerEnable)   
+            new LogManager(
+                // 日志目录
+                logDirs = config.logDirs.map(new File(_).getAbsoluteFile),
+                initialOfflineDirs = initialOfflineDirs.map(new File(_).getAbsoluteFile),
+                configRepository = configRepository,
+                initialDefaultConfig = defaultLogConfig,
+                // 清理器配置
+                cleanerConfig = cleanerConfig,
+                // 恢复线程 每数据目录
+                recoveryThreadsPerDataDir = config.numRecoveryThreadsPerDataDir,
+                flushCheckMs = config.logFlushSchedulerIntervalMs,
+                flushRecoveryOffsetCheckpointMs = config.logFlushOffsetCheckpointIntervalMs,
+                flushStartOffsetCheckpointMs = config.logFlushStartOffsetCheckpointIntervalMs,
+                retentionCheckMs = config.logCleanupIntervalMs,
+                // 最大事务超时
+                maxTransactionTimeoutMs = config.transactionMaxTimeoutMs,
+                // 生产者状态管理器配置
+                producerStateManagerConfig = new ProducerStateManagerConfig(config.producerIdExpirationMs, config.transactionPartitionVerificationEnable),
+                producerIdExpirationCheckIntervalMs = config.producerIdExpirationCheckIntervalMs,
+                // 定时任务
+                scheduler = kafkaScheduler,
+                brokerTopicStats = brokerTopicStats,
+                logDirFailureChannel = logDirFailureChannel,
+                time = time,
+                keepPartitionMetadataFile = keepPartitionMetadataFile,
+                // 内部Broker协议版本
+                interBrokerProtocolVersion = config.interBrokerProtocolVersion,
+                remoteStorageSystemEnable = config.remoteLogManagerConfig.enableRemoteStorageSystem())             
+        // Broker状态为 恢复的状态    
+        _brokerState = BrokerState.RECOVERY
+        // 日志管理器 启动
+        logManager.startup(zkClient.getAllTopicsInCluster()) 
+            // Kafka 日志保留 定时清理过期的日志
+            scheduler.schedule("kafka-log-retention", () => cleanupLogs(), InitialTaskDelayMs, retentionCheckMs)
+            // Kafka 日志刷盘器 定时刷新还没有写到磁盘的日志
+            scheduler.schedule("kafka-log-flusher", () => flushDirtyLogs(), InitialTaskDelayMs, flushCheckMs)
+            // Kafka 恢复点 检查点 定时将所有数据目录所有日志的检查点写到检查点文件中
+            scheduler.schedule("kafka-recovery-point-checkpoint", () => checkpointLogRecoveryOffsets(), InitialTaskDelayMs, flushRecoveryOffsetCheckpointMs)
+            scheduler.schedule("kafka-log-start-offset-checkpoint", () => checkpointLogStartOffsets(), InitialTaskDelayMs, flushStartOffsetCheckpointMs)
+            // Kafka 删除日志 执行一次 删除标记为delete的日志
+            scheduler.scheduleOnce("kafka-delete-logs", () => deleteLogs(), InitialTaskDelayMs)
+
+kafka.log.LogManager
+    LogManager初始化
+    // 创建并校验日志目录
+    private def createAndValidateLogDirs(dirs: Seq[File], initialOfflineDirs: Seq[File]): ConcurrentLinkedQueue[File] = 
+       // 遍历日志目录      
+       for (dir <- dirs) {
+           // 目录不存在
+           if (!dir.exists) 
+               // 创建目录
+               val created = dir.mkdirs()
+               // 刷盘 刷目录
+               Utils.flushDir(dir.toPath.toAbsolutePath.normalize.getParent)
+    // 锁日志目录
+    private def lockLogDirs(dirs: Seq[File]): Seq[FileLock] 
+        dirs.flatMap { dir =>
+            // 创建文件锁  
+            val lock = new FileLock(new File(dir, LockFileName))
+            // 尝试获取锁            
+            if (!lock.tryLock())
+    // 加载日志
+    private[log] def loadLogs(defaultConfig: LogConfig, topicConfigOverrides: Map[String, LogConfig]): Unit = {
+        // 处理每个日志目录
+        for (dir <- liveLogDirs) {
+            // 日志命令绝对路径
+            val logDirAbsolutePath = dir.getAbsolutePath
+            val pool = Executors.newFixedThreadPool(numRecoveryThreadsPerDataDir,
+            new LogRecoveryThreadFactory(logDirAbsolutePath))
+            threadPools.append(pool)
+            // 日志恢复检查点
+            recoveryPoints = this.recoveryPointCheckpoints(dir).read()
+            // 日志开始偏移
+            logStartOffsets = this.logStartOffsetCheckpoints(dir).read()
+        
+```
+
+## Broker LogManager 源码
+
+_来自网络_
+
+```
+创建topic可以指定分区partition个数，每个broker按照自己分到的topic的partition，创建对应的log
+每个log由多个LogSegment组成，每个LogSegment以本LogSegment的第一条message为索引供segments管理
 ```
 
 ## 消费者 提交偏移 源码分析
